@@ -246,7 +246,8 @@
             background: #2c3038;
         }
         .uc-body { min-width: 0; }
-        .uc-name { margin: 0 0 8px; font-size: 17px; font-weight: 800; color: #fff; }
+        .uc-name { margin: 0 0 4px; font-size: 17px; font-weight: 800; color: #fff; }
+        .uc-country { font-size: 13px; font-weight: 600; color: #cdd3db; margin-bottom: 7px; }
         .uc-links { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; margin-top: 2px; }
         .uc-link {
             color: #cdd3db; text-decoration: none;
@@ -528,6 +529,21 @@
         // ---- State ----
         let records = [];
         let query = '';
+        let places = [];   // loaded from places.json (name, country, flag, lat, lng)
+
+        // Nearest listed place to a coordinate — used to label a member's country
+        function nearestPlace(coords) {
+            if (!places.length) return null;
+            const lat = coords[0], lng = coords[1];
+            const k = Math.cos(lat * Math.PI / 180);
+            let best = null, bestD = Infinity;
+            for (const p of places) {
+                const dLat = p.lat - lat, dLng = (p.lng - lng) * k;
+                const d = dLat * dLat + dLng * dLng;
+                if (d < bestD) { bestD = d; best = p; }
+            }
+            return best;
+        }
 
         function buildRecords(users) {
             records = users.map((user, idx) => {
@@ -558,17 +574,26 @@
                     iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -22]
                 });
 
-                const marker = L.marker(user.coordinates, { icon })
-                    .bindTooltip(esc(user.username), { direction: 'top', offset: [0, -22], className: 'name-tip' })
-                    .bindPopup(`
+                // Built on open so places.json (for the country) is loaded by then
+                const popupHtml = () => {
+                    const loc = nearestPlace(user.coordinates);
+                    const countryRow = loc
+                        ? `<div class="uc-country">${loc.flag || ''} ${esc(loc.country)}</div>`
+                        : '';
+                    return `
                         <div class="uc">
                             <img class="uc-av" src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
                             <div class="uc-body">
                                 <h3 class="uc-name">${esc(user.username)}</h3>
+                                ${countryRow}
                                 <div class="uc-links">${rowsHtml}</div>
                             </div>
-                        </div>
-                    `, { minWidth: 250, maxWidth: 300 });
+                        </div>`;
+                };
+
+                const marker = L.marker(user.coordinates, { icon })
+                    .bindTooltip(esc(user.username), { direction: 'top', offset: [0, -22], className: 'name-tip' })
+                    .bindPopup(popupHtml, { minWidth: 250, maxWidth: 300 });
 
                 // Hide the hover name while the popup is open (don't show both at once)
                 marker.on('popupopen', () => marker.closeTooltip());
@@ -681,7 +706,7 @@
         fetch('places.json', { cache: 'no-cache' })
             .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(data => {
-                const places = Array.isArray(data) ? data : (data.places || []);
+                places = Array.isArray(data) ? data : (data.places || []);
                 const frag = document.createDocumentFragment();
                 places.forEach(p => {
                     if (p.lat == null || p.lng == null) return;
