@@ -53,15 +53,8 @@
         .brand {
             position: absolute; top: 16px; left: 16px; z-index: 600;
             display: flex; align-items: center; gap: 9px;
-            /* background: var(--text); */
-            /* backdrop-filter: blur(10px); */
-            /* padding: 0px 4px 2px 2px; */
-            /* border-radius: 13px; */
-            /* border: 1px solid var(--border); */
-            box-shadow: rgba(0,0,0,0.28);
         }
         .brand img { width: 56px; height: 56px; }
-        /* .brand h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; } */
 
         /* ---- Vertical toolbar (right) ---- */
         .toolbar {
@@ -136,9 +129,6 @@
                 rgba(140, 140, 140, 0.42) 0%,
                 rgba(78, 85, 94, 0.60) 12%,
                 rgba(26, 29, 34, 0.88) 30%);
-            /* backdrop-filter: blur(12px); */
-            /* border-top: 1px solid rgba(229, 115, 36, 0.30); */
-            /* border-radius: 18px 18px 0 0; */
             padding: 9px 16px 12px;
             box-shadow: 0 -6px 30px rgba(72, 72, 72, 0.4);
         }
@@ -552,7 +542,6 @@
                 const hasGh = platforms.some(p => /github/i.test(p));
                 const hasWeb = platforms.some(p => !/github/i.test(p));
 
-                // Each link becomes a "label  value" row in the info card
                 // Each platform title is itself the clickable link
                 const rowsHtml = platforms.map(p =>
                     `<a class="uc-link" href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
