@@ -410,7 +410,7 @@
     <div class="add-modal modal" id="addModal" role="dialog" aria-label="Add yourself">
         <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
         <h2 class="modal-title">Add yourself</h2>
-        <p class="modal-sub">Opens a GitHub PR to Andrew-Velox/rust_user_map</p>
+        <p class="modal-sub">Opens a GitHub PR to Andrew-Velox/rust-user-map</p>
 
         <label class="modal-label" for="addUsername">Username</label>
         <input type="text" id="addUsername" placeholder="your username" autocomplete="off">
@@ -469,7 +469,7 @@
     <script>
     (function () {
         const FERRIS = "https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/mascot/ferris-flat-happy.svg";
-        const REPO = "https://github.com/Andrew-Velox/rust_user_map";
+        const REPO = "https://github.com/Andrew-Velox/rust-user-map";
         const HOME = { center: [25, 5], zoom: 2.5 };
 
         const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
@@ -673,7 +673,7 @@
         document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
         document.getElementById('homeBtn').addEventListener('click', () => map.flyTo(HOME.center, HOME.zoom, { duration: 0.7 }));
         // ---- Add-yourself modal ----
-        const SLUG = "Andrew-Velox/rust_user_map";
+        const SLUG = "Andrew-Velox/rust-user-map";
         const BRANCH = "main";
 
         const M = {

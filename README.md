@@ -2,13 +2,13 @@
 
 An interactive world map of Rustaceans. Every member is a Ferris crab dropped at their (rough) location that flips over to reveal their GitHub avatar.
 
-**[Open the map](https://andrew-velox.github.io/rust_user_map)**
+**[Open the map](https://andrew-velox.github.io/rust-user-map)**
 
 <!-- The member list is a folder of small JSON files. A Rust CLI validates them and bundles them into the data the site loads, and GitHub Actions redeploys the page on every push. -->
 
 ## Add yourself
 
-Drop one file into the [`user/`](user/) folder named `<your-username>.json` and open a PR — either with the add button on the map (it pre-fills the PR for you) or [directly on GitHub](https://github.com/Andrew-Velox/rs_user_map/new/main/user).
+Drop one file into the [`user/`](user/) folder named `<your-username>.json` and open a PR — either with the add button on the map (it pre-fills the PR for you) or [directly on GitHub](https://github.com/Andrew-Velox/rust-user-map/new/main/user).
 
 ```json
 {
