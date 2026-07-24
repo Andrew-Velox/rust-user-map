@@ -92,6 +92,25 @@
         .tool-btn.accent { border-color: transparent; }
         .tool-btn.accent:hover { background: #eb4800; color: #fff; border-color: transparent; }
 
+        /* Connected pill for the zoom/reset controls (dividers between) */
+        .tool-group {
+            display: flex; flex-direction: column;
+            background: var(--glass); backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        }
+        .tool-group .tool-btn {
+            background: transparent; border: none; border-radius: 0;
+            box-shadow: none; backdrop-filter: none;
+            transition: background .15s, color .15s;
+        }
+        .tool-group .tool-btn:not(:first-child) { border-top: 1px solid var(--border); }
+        .tool-group .tool-btn:hover {
+            background: var(--glass-soft); color: var(--rust);
+            transform: none; box-shadow: none; border-color: var(--border);
+        }
+
         /* ---- Search popover (top-center) ---- */
         .search-pop {
             position: absolute; top: 16px; left: 50%; z-index: 650;
@@ -350,15 +369,17 @@
 
     <!-- Vertical toolbar -->
     <div class="toolbar">
-        <button class="tool-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-        <button class="tool-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
-        <button class="tool-btn" id="homeBtn" title="Reset view" aria-label="Reset view">
-            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
-        </button>
+        <div class="tool-group">
+            <button class="tool-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tool-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">
+                <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="tool-btn" id="homeBtn" title="Reset view" aria-label="Reset view">
+                <svg viewBox="0 0 24 24"><polyline points="8 11 12 7 16 11"/><polyline points="8 14 12 18 16 14"/></svg>
+            </button>
+        </div>
         <button class="tool-btn" id="searchBtn" title="Search members" aria-label="Search members">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
