@@ -1,33 +1,262 @@
 [
   {
-    "nick": "test_user",
+    "nick": "timClicks",
     "coordinates": [
-      33.3099,
-      90.25631
+      -41.2865,
+      174.7762
     ],
     "links": {
-      "Website": "test.github.io",
-      "GitHub": "https://github.com/test_user"
+      "GitHub": "https://github.com/timclicks"
     }
   },
   {
-    "nick": "test_user2",
+    "nick": "graydon",
     "coordinates": [
-      47.02553,
-      48.82803
+      49.2827,
+      -123.1207
     ],
     "links": {
-      "GitHub": "https://github.com/test_user2"
+      "GitHub": "https://github.com/graydon"
     }
   },
   {
-    "nick": "test_user4",
+    "nick": "seanmonstar",
     "coordinates": [
-      49.3797914,
-      8.6725471
+      47.6062,
+      -122.3321
     ],
     "links": {
-      "GitHub": "https://github.com/test_user4"
+      "GitHub": "https://github.com/seanmonstar"
+    }
+  },
+  {
+    "nick": "skade",
+    "coordinates": [
+      52.52,
+      13.405
+    ],
+    "links": {
+      "GitHub": "https://github.com/skade"
+    }
+  },
+  {
+    "nick": "m-ou-se",
+    "coordinates": [
+      52.0116,
+      4.3571
+    ],
+    "links": {
+      "GitHub": "https://github.com/m-ou-se"
+    }
+  },
+  {
+    "nick": "RalfJung",
+    "coordinates": [
+      49.239,
+      6.9969
+    ],
+    "links": {
+      "GitHub": "https://github.com/ralfjung"
+    }
+  },
+  {
+    "nick": "ojeda",
+    "coordinates": [
+      40.4168,
+      -3.7038
+    ],
+    "links": {
+      "GitHub": "https://github.com/ojeda"
+    }
+  },
+  {
+    "nick": "kornelski",
+    "coordinates": [
+      51.5072,
+      -0.1276
+    ],
+    "links": {
+      "GitHub": "https://github.com/kornelski"
+    }
+  },
+  {
+    "nick": "pietroalbini",
+    "coordinates": [
+      45.4642,
+      9.19
+    ],
+    "links": {
+      "GitHub": "https://github.com/pietroalbini"
+    }
+  },
+  {
+    "nick": "carols10cents",
+    "coordinates": [
+      40.4406,
+      -79.9959
+    ],
+    "links": {
+      "GitHub": "https://github.com/carols10cents"
+    }
+  },
+  {
+    "nick": "fasterthanlime",
+    "coordinates": [
+      45.764,
+      4.8357
+    ],
+    "links": {
+      "GitHub": "https://github.com/fasterthanlime"
+    }
+  },
+  {
+    "nick": "nikomatsakis",
+    "coordinates": [
+      42.3601,
+      -71.0589
+    ],
+    "links": {
+      "GitHub": "https://github.com/nikomatsakis"
+    }
+  },
+  {
+    "nick": "Darksonn",
+    "coordinates": [
+      55.6761,
+      12.5683
+    ],
+    "links": {
+      "GitHub": "https://github.com/darksonn"
+    }
+  },
+  {
+    "nick": "Manishearth",
+    "coordinates": [
+      37.8715,
+      -122.273
+    ],
+    "links": {
+      "GitHub": "https://github.com/Manishearth"
+    }
+  },
+  {
+    "nick": "joshtriplett",
+    "coordinates": [
+      45.5152,
+      -122.6784
+    ],
+    "links": {
+      "GitHub": "https://github.com/joshtriplett"
+    }
+  },
+  {
+    "nick": "cuviper",
+    "coordinates": [
+      45.5152,
+      -122.6784
+    ],
+    "links": {
+      "GitHub": "https://github.com/cuviper"
+    }
+  },
+  {
+    "nick": "steveklabnik",
+    "coordinates": [
+      30.2672,
+      -97.7431
+    ],
+    "links": {
+      "GitHub": "https://github.com/steveklabnik"
+    }
+  },
+  {
+    "nick": "alexcrichton",
+    "coordinates": [
+      37.7749,
+      -122.4194
+    ],
+    "links": {
+      "GitHub": "https://github.com/alexcrichton"
+    }
+  },
+  {
+    "nick": "carllerche",
+    "coordinates": [
+      45.5152,
+      -122.6784
+    ],
+    "links": {
+      "GitHub": "https://github.com/carllerche"
+    }
+  },
+  {
+    "nick": "jonhoo",
+    "coordinates": [
+      59.9139,
+      10.7522
+    ],
+    "links": {
+      "GitHub": "https://github.com/jonhoo"
+    }
+  },
+  {
+    "nick": "kobzol",
+    "coordinates": [
+      50.0755,
+      14.4378
+    ],
+    "links": {
+      "GitHub": "https://github.com/kobzol"
+    }
+  },
+  {
+    "nick": "tmandry",
+    "coordinates": [
+      37.7749,
+      -122.4194
+    ],
+    "links": {
+      "GitHub": "https://github.com/tmandry"
+    }
+  },
+  {
+    "nick": "cart",
+    "coordinates": [
+      47.6062,
+      -122.3321
+    ],
+    "links": {
+      "GitHub": "https://github.com/cart"
+    }
+  },
+  {
+    "nick": "estebank",
+    "coordinates": [
+      37.7749,
+      -122.4194
+    ],
+    "links": {
+      "GitHub": "https://github.com/estebank"
+    }
+  },
+  {
+    "nick": "mitsuhiko",
+    "coordinates": [
+      48.2082,
+      16.3738
+    ],
+    "links": {
+      "GitHub": "https://github.com/mitsuhiko"
+    }
+  },
+  {
+    "nick": "pnkfelix",
+    "coordinates": [
+      42.3601,
+      -71.0589
+    ],
+    "links": {
+      "GitHub": "https://github.com/pnkfelix"
     }
   },
   {
@@ -37,18 +266,78 @@
       90.55631
     ],
     "links": {
-      "GitHub": "https://github.com/Andrew-Velox",
-      "Website": "andrew-velox.github.io"
+      "Website": "andrew-velox.github.io",
+      "GitHub": "https://github.com/Andrew-Velox"
     }
   },
   {
-    "nick": "test_user3",
+    "nick": "weihanglo",
     "coordinates": [
-      47.02553,
-      28.82803
+      42.3601,
+      -71.0589
     ],
     "links": {
-      "GitHub": "https://github.com/test_user3"
+      "GitHub": "https://github.com/weihanglo"
+    }
+  },
+  {
+    "nick": "dtolnay",
+    "coordinates": [
+      37.4848,
+      -122.2281
+    ],
+    "links": {
+      "GitHub": "https://github.com/dtolnay"
+    }
+  },
+  {
+    "nick": "Turbo87",
+    "coordinates": [
+      50.7753,
+      6.0839
+    ],
+    "links": {
+      "GitHub": "https://github.com/turbo87"
+    }
+  },
+  {
+    "nick": "yoshuawuyts",
+    "coordinates": [
+      52.3676,
+      4.9041
+    ],
+    "links": {
+      "GitHub": "https://github.com/yoshuawuyts"
+    }
+  },
+  {
+    "nick": "BurntSushi",
+    "coordinates": [
+      42.3459,
+      -71.5523
+    ],
+    "links": {
+      "GitHub": "https://github.com/burntsushi"
+    }
+  },
+  {
+    "nick": "matklad",
+    "coordinates": [
+      38.7223,
+      -9.1393
+    ],
+    "links": {
+      "GitHub": "https://github.com/matklad"
+    }
+  },
+  {
+    "nick": "yaahc",
+    "coordinates": [
+      30.2672,
+      -97.7431
+    ],
+    "links": {
+      "GitHub": "https://github.com/yaahc"
     }
   }
 ]
