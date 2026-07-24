@@ -165,14 +165,30 @@
         .chip-more { color: var(--rust); font-weight: 800; font-size: 13px; padding: 6px 4px; align-self: center; }
         .chip-empty { color: var(--text-soft); font-size: 12.5px; padding: 0px 0px; }
 
-        /* ---- Marker pins (full-size Ferris crab) ---- */
+        /* ---- Marker pins (Ferris crab, slides to reveal GitHub avatar) ---- */
         .crab-pin {
-            width: 32px; height: 32px;
-            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.35));
+            width: 40px; height: 40px;
+            border-radius: 50%; overflow: hidden;
+            /* border: 2px solid #fff; */
+            /* box-shadow: 0 3px 6px rgba(0,0,0,0.35); */
             transition: transform .15s; cursor: pointer;
         }
         .crab-pin:hover, .crab-pin.hovered { transform: scale(1.15); }
-        .crab-pin img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .crab-pin > img { width: 100% !important; height: 100% !important; object-fit: contain; display: block; }
+
+        /* One-direction reel LOOP — crab → avatar → (seamless) crab, always upward */
+        .pin-reel {
+            position: relative; width: 100%; height: 300%;
+            animation: pinReel 6s ease-in-out infinite;
+        }
+        .pin-cell { width: 100%; height: 33.3333%; }
+        .pin-cell img { width: 100% !important; height: 100% !important; display: block; object-fit: contain; }
+        .pin-cell.av img { object-fit: cover; }
+        @keyframes pinReel {
+            0%, 30%   { transform: translateY(0); }
+            40%, 70%  { transform: translateY(-33.3333%); }
+            80%, 100% { transform: translateY(-66.6667%); }
+        }
 
         /* ---- Name tooltip on hover ---- */
         .name-tip {
@@ -482,10 +498,20 @@
                     `<a href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
                 ).join('');
 
+                const ghUser = ghUsername(user);
+                const pinHtml = ghUser
+                    ? `<div class="crab-pin has-avatar"><div class="pin-reel">`
+                        + `<div class="pin-cell"><img src="${FERRIS}" alt="Ferris"></div>`
+                        + `<div class="pin-cell av"><img src="${esc(avatar)}" alt="${esc(user.nick)}" `
+                        + `onerror="this.onerror=null;this.src='${FERRIS}';this.style.objectFit='contain';"></div>`
+                        + `<div class="pin-cell"><img src="${FERRIS}" alt="Ferris"></div>`
+                        + `</div></div>`
+                    : `<div class="crab-pin"><img src="${FERRIS}" alt="Ferris"></div>`;
+
                 const icon = L.divIcon({
                     className: '',
-                    html: `<div class="crab-pin"><img src="${FERRIS}" alt="Ferris"></div>`,
-                    iconSize: [52, 52], iconAnchor: [26, 26], popupAnchor: [0, -24]
+                    html: pinHtml,
+                    iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -22]
                 });
 
                 const marker = L.marker(user.coordinates, { icon })
@@ -507,11 +533,22 @@
             return records.filter(r => !query || r.user.nick.toLowerCase().includes(query));
         }
 
+        // Keep every pin's crab/avatar loop aligned to one shared clock so they animate together
+        const PIN_EPOCH = Date.now();
+        function syncPins() {
+            document.querySelectorAll('.pin-reel').forEach(f => {
+                if (f.dataset.synced) return;
+                f.dataset.synced = '1';
+                f.style.animationDelay = ((PIN_EPOCH - Date.now()) / 1000) + 's';
+            });
+        }
+
         // Rebuild which markers are on the map (after search change)
         function applyFilter() {
             markersLayer.clearLayers();
             active().forEach(r => markersLayer.addLayer(r.marker));
             updateDock();
+            requestAnimationFrame(syncPins);
         }
 
         // Update the bottom dock for whatever is currently in the viewport
