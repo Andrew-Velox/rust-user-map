@@ -1,0 +1,12 @@
+name: Validate Map Pin
+on: [pull_request]
+
+jobs:
+  check-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run CLI Validation
+        run: cargo run --release -- validate

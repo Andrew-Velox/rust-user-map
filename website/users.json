@@ -1,0 +1,54 @@
+[
+  {
+    "nick": "test_user",
+    "coordinates": [
+      33.3099,
+      90.25631
+    ],
+    "links": {
+      "Website": "test.github.io",
+      "GitHub": "https://github.com/test_user"
+    }
+  },
+  {
+    "nick": "test_user2",
+    "coordinates": [
+      47.02553,
+      48.82803
+    ],
+    "links": {
+      "GitHub": "https://github.com/test_user2"
+    }
+  },
+  {
+    "nick": "test_user4",
+    "coordinates": [
+      49.3797914,
+      8.6725471
+    ],
+    "links": {
+      "GitHub": "https://github.com/test_user4"
+    }
+  },
+  {
+    "nick": "Andrew-Velox",
+    "coordinates": [
+      23.83099,
+      90.55631
+    ],
+    "links": {
+      "GitHub": "https://github.com/Andrew-Velox",
+      "Website": "andrew-velox.github.io"
+    }
+  },
+  {
+    "nick": "test_user3",
+    "coordinates": [
+      47.02553,
+      28.82803
+    ],
+    "links": {
+      "GitHub": "https://github.com/test_user3"
+    }
+  }
+]

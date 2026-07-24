@@ -1,0 +1,23 @@
+# Rust build artifacts
+/target
+target/
+
+# Claude Code local settings (personal, not shared)
+.claude/settings.local.json
+.claude/*.local.json
+.claude/*.tmp*
+
+# Environment / secrets
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
