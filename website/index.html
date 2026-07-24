@@ -201,10 +201,10 @@
         .modal-backdrop.open { opacity: 1; pointer-events: auto; }
         .add-modal {
             position: absolute; z-index: 660;
-            right: 74px; top: 25%;
-            transform: translateY(-50%) scale(.96);
+            right: 74px; top: 24px;
+            transform: scale(.96); transform-origin: top center;
             width: 350px; max-width: calc(100vw - 32px);
-            max-height: calc(100vh - 32px); overflow-y: auto;
+            max-height: calc(100vh - 48px); overflow-y: auto;
             background: var(--glass); backdrop-filter: blur(14px);
             border: 1px solid var(--border); border-radius: 18px;
             padding: 18px 18px 20px; color: var(--text);
@@ -212,7 +212,7 @@
             opacity: 0; pointer-events: none;
             transition: opacity .18s, transform .18s;
         }
-        .add-modal.open { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
+        .add-modal.open { opacity: 1; pointer-events: auto; transform: scale(1); }
         .add-modal::-webkit-scrollbar { width: 8px; }
         .add-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
         .modal-close {
@@ -288,8 +288,8 @@
             .toolbar { top: auto; bottom: 190px; transform: none; }
             .dock { left: 10px; right: 10px; bottom: 10px; }
             .region { display: none; }
-            .add-modal { right: 50%; transform: translate(50%, -50%) scale(.96); }
-            .add-modal.open { transform: translate(50%, -50%) scale(1); }
+            .add-modal { right: 50%; transform: translateX(50%) scale(.96); }
+            .add-modal.open { transform: translateX(50%) scale(1); }
         }
     </style>
 </head>
@@ -331,7 +331,7 @@
     <div class="add-modal modal" id="addModal" role="dialog" aria-label="Add yourself">
         <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
         <h2 class="modal-title">Add yourself</h2>
-        <p class="modal-sub">Opens a GitHub PR draft for Andrew-Velox/rs_user_map</p>
+        <p class="modal-sub">Opens a GitHub PR to Andrew-Velox/rust_user_map</p>
 
         <label class="modal-label" for="addNick">Username</label>
         <input type="text" id="addNick" placeholder="your nickname" autocomplete="off">
@@ -392,19 +392,20 @@
     <script>
     (function () {
         const FERRIS = "https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/mascot/ferris-flat-happy.svg";
-        const REPO = "https://github.com/Andrew-Velox/rs_user_map";
+        const REPO = "https://github.com/Andrew-Velox/rust_user_map";
         const HOME = { center: [25, 5], zoom: 2.5 };
 
         const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
         const map = L.map('map', {
             center: HOME.center, zoom: HOME.zoom,
             minZoom: 2, maxZoom: 20,
+            zoomSnap: 0.5,   // allow fractional zoom levels like 2.5
             maxBounds: worldBounds, maxBoundsViscosity: 1.0,
             zoomControl: false
         });
 
         // Google Maps tiles (road view) for a familiar Google-Maps look
-        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             attribution: 'Map data &copy; Google'
         }).addTo(map);
@@ -530,29 +531,8 @@
         document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
         document.getElementById('homeBtn').addEventListener('click', () => map.flyTo(HOME.center, HOME.zoom, { duration: 0.7 }));
         // ---- Add-yourself modal ----
-        const SLUG = "Andrew-Velox/rs_user_map";
+        const SLUG = "Andrew-Velox/rust_user_map";
         const BRANCH = "main";
-        const CITIES = [
-            ["Amsterdam",52.3676,4.9041],["Athens",37.9838,23.7275],["Auckland",-36.8485,174.7633],
-            ["Bangkok",13.7563,100.5018],["Barcelona",41.3874,2.1686],["Beijing",39.9042,116.4074],
-            ["Bengaluru",12.9716,77.5946],["Berlin",52.52,13.405],["Bogotá",4.711,-74.0721],
-            ["Boston",42.3601,-71.0589],["Buenos Aires",-34.6037,-58.3816],["Cairo",30.0444,31.2357],
-            ["Cape Town",-33.9249,18.4241],["Chicago",41.8781,-87.6298],["Delhi",28.6139,77.209],
-            ["Dhaka",23.8103,90.4125],["Dubai",25.2048,55.2708],["Dublin",53.3498,-6.2603],
-            ["Helsinki",60.1699,24.9384],["Hong Kong",22.3193,114.1694],["Istanbul",41.0082,28.9784],
-            ["Jakarta",-6.2088,106.8456],["Johannesburg",-26.2041,28.0473],["Kyiv",50.4501,30.5234],
-            ["Lagos",6.5244,3.3792],["Lisbon",38.7223,-9.1393],["London",51.5074,-0.1278],
-            ["Los Angeles",34.0522,-118.2437],["Madrid",40.4168,-3.7038],["Mexico City",19.4326,-99.1332],
-            ["Milan",45.4642,9.19],["Montréal",45.5017,-73.5673],["Moscow",55.7558,37.6173],
-            ["Mumbai",19.076,72.8777],["Munich",48.1351,11.582],["Nairobi",-1.2921,36.8219],
-            ["New York",40.7128,-74.006],["Osaka",34.6937,135.5023],["Oslo",59.9139,10.7522],
-            ["Paris",48.8566,2.3522],["Prague",50.0755,14.4378],["Rio de Janeiro",-22.9068,-43.1729],
-            ["Rome",41.9028,12.4964],["San Francisco",37.7749,-122.4194],["São Paulo",-23.5558,-46.6396],
-            ["Seattle",47.6062,-122.3321],["Seoul",37.5665,126.978],["Shanghai",31.2304,121.4737],
-            ["Singapore",1.3521,103.8198],["Stockholm",59.3293,18.0686],["Sydney",-33.8688,151.2093],
-            ["Tokyo",35.6762,139.6503],["Toronto",43.6532,-79.3832],["Vancouver",49.2827,-123.1207],
-            ["Vienna",48.2082,16.3738],["Warsaw",52.2297,21.0122],["Zürich",47.3769,8.5417]
-        ];
 
         const M = {
             modal: document.getElementById('addModal'),
@@ -569,13 +549,25 @@
         let locMode = 'city';
         let detected = null;
 
-        // Populate the city dropdown
-        CITIES.forEach(([name, lat, lng]) => {
-            const o = document.createElement('option');
-            o.value = lat + ',' + lng;
-            o.textContent = name;
-            M.citySelect.appendChild(o);
-        });
+        // Populate the place dropdown from places.json (data lives in its own file)
+        fetch('places.json', { cache: 'no-cache' })
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(data => {
+                const places = Array.isArray(data) ? data : (data.places || []);
+                const frag = document.createDocumentFragment();
+                places.forEach(p => {
+                    if (p.lat == null || p.lng == null) return;
+                    const o = document.createElement('option');
+                    o.value = p.lat + ',' + p.lng;
+                    o.textContent = p.country ? `${p.name}, ${p.country}` : p.name;
+                    frag.appendChild(o);
+                });
+                M.citySelect.appendChild(frag);
+            })
+            .catch(err => {
+                console.error('Could not load places.json:', err);
+                M.citySelect.options[0].textContent = 'Place list unavailable — use Lat/Lng';
+            });
 
         // Link rows
         function addLinkRow(label, url) {
