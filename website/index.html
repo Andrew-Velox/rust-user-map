@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rust Community Map</title>
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/mascot/ferris-flat-happy.svg">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -175,7 +176,7 @@
         }
         .leaflet-popup-content { margin: 12px 14px; font-size: 14px; min-width: 150px; }
         .pop-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .pop-head img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--rust); }
+        .pop-head img { width: 40px; height: 40px; border-radius: 50%; }
         .pop-head h3 { margin: 0; font-size: 15px; }
         .pop-links a {
             display: inline-flex; align-items: center; gap: 5px;
@@ -689,6 +690,13 @@
         });
         searchInput.addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); applyFilter(); });
         searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') searchPop.classList.remove('open'); });
+        // Close the search box when clicking anywhere outside it (or its toggle button)
+        document.addEventListener('click', e => {
+            if (!searchPop.classList.contains('open')) return;
+            if (!searchPop.contains(e.target) && !document.getElementById('searchBtn').contains(e.target)) {
+                searchPop.classList.remove('open');
+            }
+        });
 
         // ---- Load data ----
         const overlay = document.getElementById('overlay');
