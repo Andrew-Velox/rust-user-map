@@ -33,7 +33,7 @@ jobs:
 
       # Runs src/main.rs: reads user/*.json and writes website/users.json
       - name: Generate users.json
-        run: cargo run --release
+        run: cargo run --release -- build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
