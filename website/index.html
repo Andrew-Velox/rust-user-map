@@ -186,11 +186,17 @@
 
         /* ---- Marker pins (Ferris crab, slides to reveal GitHub avatar) ---- */
         .crab-pin {
-            width: 40px; height: 40px;
+            width: 50px; height: 50px;
             border-radius: 50%; overflow: hidden;
-            /* border: 2px solid #fff; */
-            /* box-shadow: 0 3px 6px rgba(0,0,0,0.35); */
+            border: 2px solid transparent;   /* only turns white while the avatar shows */
             transition: transform .15s; cursor: pointer;
+        }
+        /* Fade the border in only during the avatar portion of the reel (synced to pinReel) */
+        .crab-pin.has-avatar { animation: pinBorder 6s ease-in-out infinite; }
+        @keyframes pinBorder {
+            0%, 35%   { border-color: transparent; }
+            45%, 65%  { border-color: #fff; }
+            75%, 100% { border-color: transparent; }
         }
         .crab-pin:hover, .crab-pin.hovered { transform: scale(1.15); }
         .crab-pin > img { width: 100% !important; height: 100% !important; object-fit: contain; display: block; }
@@ -217,21 +223,36 @@
         }
         .name-tip::before { border-top-color: #14171c; }
 
-        /* ---- Popups ---- */
+        /* ---- Popup: user info card ---- */
         .leaflet-popup-content-wrapper {
-            border-radius: 12px; background: #fff; color: #1c1f23;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            border-radius: 16px;
+            background: rgba(44, 48, 56, 0.94);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            box-shadow: 0 14px 44px rgba(0,0,0,0.45);
         }
-        .leaflet-popup-content { margin: 12px 14px; font-size: 14px; min-width: 150px; }
-        .pop-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .pop-head img { width: 40px; height: 40px; border-radius: 50%; }
-        .pop-head h3 { margin: 0; font-size: 15px; }
-        .pop-links a {
-            display: inline-flex; align-items: center; gap: 5px;
-            color: #0a6ba8; text-decoration: none; font-weight: 600; font-size: 13px; padding: 4px 0;
+        .leaflet-popup-tip { background: rgba(44, 48, 56, 0.94); }
+        .leaflet-popup-content { margin: 0; }
+        .leaflet-popup-close-button {
+            color: rgba(255,255,255,0.6) !important;
+            top: 9px !important; right: 11px !important;
+            font-size: 18px !important;
         }
-        .pop-links a:hover { text-decoration: underline; }
-        .pop-links a::before { content: "↗"; opacity: .6; }
+        .leaflet-popup-close-button:hover { color: #fff !important; }
+        .uc { display: flex; align-items: center; gap: 15px; padding: 15px 32px 15px 15px; }
+        .uc-av {
+            width: 82px; height: 82px; flex-shrink: 0;
+            border-radius: 50%; object-fit: cover; border: 3px solid #fff;
+            background: #2c3038;
+        }
+        .uc-body { min-width: 0; }
+        .uc-name { margin: 0 0 8px; font-size: 17px; font-weight: 800; color: #fff; }
+        .uc-links { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; margin-top: 2px; }
+        .uc-link {
+            color: #cdd3db; text-decoration: none;
+            font-size: 13px; font-weight: 600; line-height: 1.7;
+        }
+        .uc-link:hover { color: #e6a23c; text-decoration: underline; }
 
         /* ---- Loading / error overlay ---- */
         .overlay {
@@ -515,8 +536,10 @@
                 const hasGh = platforms.some(p => /github/i.test(p));
                 const hasWeb = platforms.some(p => !/github/i.test(p));
 
-                const linksHtml = platforms.map(p =>
-                    `<a href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
+                // Each link becomes a "label  value" row in the info card
+                // Each platform title is itself the clickable link
+                const rowsHtml = platforms.map(p =>
+                    `<a class="uc-link" href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
                 ).join('');
 
                 const ghUser = ghUsername(user);
@@ -538,12 +561,18 @@
                 const marker = L.marker(user.coordinates, { icon })
                     .bindTooltip(esc(user.username), { direction: 'top', offset: [0, -22], className: 'name-tip' })
                     .bindPopup(`
-                        <div class="pop-head">
-                            <img src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
-                            <h3>${esc(user.username)}</h3>
+                        <div class="uc">
+                            <img class="uc-av" src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
+                            <div class="uc-body">
+                                <h3 class="uc-name">${esc(user.username)}</h3>
+                                <div class="uc-links">${rowsHtml}</div>
+                            </div>
                         </div>
-                        <div class="pop-links">${linksHtml}</div>
-                    `);
+                    `, { minWidth: 250, maxWidth: 300 });
+
+                // Hide the hover name while the popup is open (don't show both at once)
+                marker.on('popupopen', () => marker.closeTooltip());
+                marker.on('tooltipopen', () => { if (marker.isPopupOpen()) marker.closeTooltip(); });
 
                 return { user, marker, platforms, hasGh, hasWeb, idx };
             });
@@ -557,10 +586,11 @@
         // Keep every pin's crab/avatar loop aligned to one shared clock so they animate together
         const PIN_EPOCH = Date.now();
         function syncPins() {
-            document.querySelectorAll('.pin-reel').forEach(f => {
+            const delay = ((PIN_EPOCH - Date.now()) / 1000) + 's';
+            document.querySelectorAll('.pin-reel, .crab-pin.has-avatar').forEach(f => {
                 if (f.dataset.synced) return;
                 f.dataset.synced = '1';
-                f.style.animationDelay = ((PIN_EPOCH - Date.now()) / 1000) + 's';
+                f.style.animationDelay = delay;
             });
         }
 
