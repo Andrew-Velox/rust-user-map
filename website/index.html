@@ -64,13 +64,19 @@
             color: #fff; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-            transition: background .15s, transform .08s;
+            transition: background .15s, transform .12s, border-color .15s, box-shadow .15s, color .15s;
         }
-        .tool-btn:hover { background: var(--glass-soft); }
+        .tool-btn:hover {
+            background: #eb4800;
+            border-color: var(--rust);
+            color: #fff;
+            transform: translateY(-2px) scale(1.06);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.42);
+        }
         .tool-btn:active { transform: scale(0.93); }
         .tool-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .tool-btn.accent { background: var(--rust); border-color: transparent; }
-        .tool-btn.accent:hover { background: #eb4800; }
+        .tool-btn.accent { border-color: transparent; }
+        .tool-btn.accent:hover { background: #eb4800; color: #fff; border-color: transparent; }
 
         /* ---- Search popover (top-center) ---- */
         .search-pop {
