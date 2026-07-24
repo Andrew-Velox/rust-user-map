@@ -1,6 +1,7 @@
 # Rust build artifacts
 /target
 target/
+website/index.html linguist-vendored
 
 # Claude Code local settings (personal, not shared)
 .claude/settings.local.json
