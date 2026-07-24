@@ -31,10 +31,23 @@
         #map {
             width: 100vw;
             height: 100vh;
+            height: 100dvh;   /* avoid mobile address-bar clipping the bottom dock */
             background: #e8edf2;
         }
         /* Hide default Leaflet zoom (we use the custom toolbar) */
         .leaflet-control-zoom { display: none; }
+        /* Small, subtle Google-style copyright label */
+        .leaflet-control-attribution {
+            font-size: 9px !important;
+            line-height: 1.5;
+            padding: 1px 7px !important;
+            margin: 0 !important;
+            background: rgba(255, 255, 255, 0.72) !important;
+            color: #3a3f47 !important;
+            border-radius: 6px 0 0 0;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.12);
+        }
+        .leaflet-control-attribution a { color: #0a6ba8 !important; text-decoration: none; }
 
         /* ---- Brand chip (top-left) ---- */
         .brand {
@@ -150,7 +163,7 @@
         }
         .chip-u.has-gh { color: #f0f3f6; }
         .chip-more { color: var(--rust); font-weight: 800; font-size: 13px; padding: 6px 4px; align-self: center; }
-        .chip-empty { color: var(--text-soft); font-size: 12.5px; padding: 6px 2px; }
+        .chip-empty { color: var(--text-soft); font-size: 12.5px; padding: 0px 0px; }
 
         /* ---- Marker pins (full-size Ferris crab) ---- */
         .crab-pin {
@@ -217,7 +230,8 @@
             right: 74px; top: 24px;
             transform: scale(.96); transform-origin: top center;
             width: 350px; max-width: calc(100vw - 32px);
-            max-height: calc(100vh - 48px); overflow-y: auto;
+            max-height: calc(100vh - 48px);
+            max-height: calc(100dvh - 48px); overflow-y: auto;
             background: var(--glass); backdrop-filter: blur(14px);
             border: 1px solid var(--border); border-radius: 18px;
             padding: 18px 18px 20px; color: var(--text);
@@ -298,9 +312,12 @@
         .pr-btn:hover { background: var(--rust); color: #fff; }
 
         @media (max-width: 640px) {
-            .toolbar { top: auto; bottom: 190px; transform: none; }
+            .toolbar { top: auto; bottom: 160px; transform: none; gap: 10px; }
+            .tool-btn { width: 38px; height: 38px; }
             .dock { left: 0; right: 0; bottom: 0; }
             .region { display: none; }
+            .chips { max-height: 84px; }
+            .brand img { width: 44px; height: 44px; }
             .add-modal { right: 50%; transform: translateX(50%) scale(.96); }
             .add-modal.open { transform: translateX(50%) scale(1); }
         }
@@ -415,11 +432,12 @@
             zoomControl: false
         });
 
-        // Google Maps tiles (road view) for a familiar Google-Maps look
-        L.tileLayer('https://{s}.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}', {
-            maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            attribution: 'Map data &copy; Google'
+        // CARTO Voyager tiles — OpenStreetMap data, license-safe for public use
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20, subdomains: 'abcd', detectRetina: true,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(map);
+        map.attributionControl.setPrefix(false);   // drop the "Leaflet" prefix for a cleaner label
 
         // Plain marker layer — no clustering, so no count bubbles
         const markersLayer = L.featureGroup().addTo(map);
@@ -512,7 +530,7 @@
             el.region.textContent = continentAt(map.getCenter());
 
             if (!inView.length) {
-                el.chips.innerHTML = `<span class="chip-empty">No members in view — zoom out or pan around.</span>`;
+                el.chips.innerHTML = `<span class="chip-empty">No members in view, zoom out or pan around.</span>`;
                 return;
             }
             const shown = inView.slice(0, MAX_CHIPS);
