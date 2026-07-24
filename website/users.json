@@ -1,6 +1,6 @@
 [
   {
-    "nick": "timClicks",
+    "username": "timClicks",
     "coordinates": [
       -41.2865,
       174.7762
@@ -10,7 +10,7 @@
     }
   },
   {
-    "nick": "graydon",
+    "username": "graydon",
     "coordinates": [
       49.2827,
       -123.1207
@@ -20,7 +20,7 @@
     }
   },
   {
-    "nick": "seanmonstar",
+    "username": "seanmonstar",
     "coordinates": [
       47.6062,
       -122.3321
@@ -30,7 +30,7 @@
     }
   },
   {
-    "nick": "skade",
+    "username": "skade",
     "coordinates": [
       52.52,
       13.405
@@ -40,7 +40,7 @@
     }
   },
   {
-    "nick": "m-ou-se",
+    "username": "m-ou-se",
     "coordinates": [
       52.0116,
       4.3571
@@ -50,7 +50,7 @@
     }
   },
   {
-    "nick": "RalfJung",
+    "username": "RalfJung",
     "coordinates": [
       49.239,
       6.9969
@@ -60,7 +60,7 @@
     }
   },
   {
-    "nick": "ojeda",
+    "username": "ojeda",
     "coordinates": [
       40.4168,
       -3.7038
@@ -70,7 +70,7 @@
     }
   },
   {
-    "nick": "kornelski",
+    "username": "kornelski",
     "coordinates": [
       51.5072,
       -0.1276
@@ -80,7 +80,7 @@
     }
   },
   {
-    "nick": "pietroalbini",
+    "username": "pietroalbini",
     "coordinates": [
       45.4642,
       9.19
@@ -90,7 +90,7 @@
     }
   },
   {
-    "nick": "carols10cents",
+    "username": "carols10cents",
     "coordinates": [
       40.4406,
       -79.9959
@@ -100,7 +100,7 @@
     }
   },
   {
-    "nick": "fasterthanlime",
+    "username": "fasterthanlime",
     "coordinates": [
       45.764,
       4.8357
@@ -110,7 +110,7 @@
     }
   },
   {
-    "nick": "nikomatsakis",
+    "username": "nikomatsakis",
     "coordinates": [
       42.3601,
       -71.0589
@@ -120,7 +120,7 @@
     }
   },
   {
-    "nick": "Darksonn",
+    "username": "Darksonn",
     "coordinates": [
       55.6761,
       12.5683
@@ -130,7 +130,7 @@
     }
   },
   {
-    "nick": "Manishearth",
+    "username": "Manishearth",
     "coordinates": [
       37.8715,
       -122.273
@@ -140,7 +140,7 @@
     }
   },
   {
-    "nick": "joshtriplett",
+    "username": "joshtriplett",
     "coordinates": [
       45.5152,
       -122.6784
@@ -150,7 +150,7 @@
     }
   },
   {
-    "nick": "cuviper",
+    "username": "cuviper",
     "coordinates": [
       45.5152,
       -122.6784
@@ -160,7 +160,7 @@
     }
   },
   {
-    "nick": "steveklabnik",
+    "username": "steveklabnik",
     "coordinates": [
       30.2672,
       -97.7431
@@ -170,7 +170,7 @@
     }
   },
   {
-    "nick": "alexcrichton",
+    "username": "alexcrichton",
     "coordinates": [
       37.7749,
       -122.4194
@@ -180,7 +180,7 @@
     }
   },
   {
-    "nick": "carllerche",
+    "username": "carllerche",
     "coordinates": [
       45.5152,
       -122.6784
@@ -190,7 +190,7 @@
     }
   },
   {
-    "nick": "jonhoo",
+    "username": "jonhoo",
     "coordinates": [
       59.9139,
       10.7522
@@ -200,7 +200,7 @@
     }
   },
   {
-    "nick": "kobzol",
+    "username": "kobzol",
     "coordinates": [
       50.0755,
       14.4378
@@ -210,7 +210,7 @@
     }
   },
   {
-    "nick": "tmandry",
+    "username": "tmandry",
     "coordinates": [
       37.7749,
       -122.4194
@@ -220,7 +220,7 @@
     }
   },
   {
-    "nick": "cart",
+    "username": "cart",
     "coordinates": [
       47.6062,
       -122.3321
@@ -230,7 +230,7 @@
     }
   },
   {
-    "nick": "estebank",
+    "username": "estebank",
     "coordinates": [
       37.7749,
       -122.4194
@@ -240,7 +240,7 @@
     }
   },
   {
-    "nick": "mitsuhiko",
+    "username": "mitsuhiko",
     "coordinates": [
       48.2082,
       16.3738
@@ -250,7 +250,7 @@
     }
   },
   {
-    "nick": "pnkfelix",
+    "username": "pnkfelix",
     "coordinates": [
       42.3601,
       -71.0589
@@ -260,7 +260,7 @@
     }
   },
   {
-    "nick": "Andrew-Velox",
+    "username": "Andrew-Velox",
     "coordinates": [
       23.83099,
       90.55631
@@ -271,7 +271,7 @@
     }
   },
   {
-    "nick": "weihanglo",
+    "username": "weihanglo",
     "coordinates": [
       42.3601,
       -71.0589
@@ -281,7 +281,7 @@
     }
   },
   {
-    "nick": "dtolnay",
+    "username": "dtolnay",
     "coordinates": [
       37.4848,
       -122.2281
@@ -291,7 +291,7 @@
     }
   },
   {
-    "nick": "Turbo87",
+    "username": "Turbo87",
     "coordinates": [
       50.7753,
       6.0839
@@ -301,7 +301,7 @@
     }
   },
   {
-    "nick": "yoshuawuyts",
+    "username": "yoshuawuyts",
     "coordinates": [
       52.3676,
       4.9041
@@ -311,7 +311,7 @@
     }
   },
   {
-    "nick": "BurntSushi",
+    "username": "BurntSushi",
     "coordinates": [
       42.3459,
       -71.5523
@@ -321,7 +321,7 @@
     }
   },
   {
-    "nick": "matklad",
+    "username": "matklad",
     "coordinates": [
       38.7223,
       -9.1393
@@ -331,7 +331,7 @@
     }
   },
   {
-    "nick": "yaahc",
+    "username": "yaahc",
     "coordinates": [
       30.2672,
       -97.7431

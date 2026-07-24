@@ -379,8 +379,8 @@
         <h2 class="modal-title">Add yourself</h2>
         <p class="modal-sub">Opens a GitHub PR to Andrew-Velox/rust_user_map</p>
 
-        <label class="modal-label" for="addNick">Username</label>
-        <input type="text" id="addNick" placeholder="your nickname" autocomplete="off">
+        <label class="modal-label" for="addUsername">Username</label>
+        <input type="text" id="addUsername" placeholder="your username" autocomplete="off">
 
         <label class="modal-label">Location</label>
         <div class="seg" id="locSeg">
@@ -502,7 +502,7 @@
                 const pinHtml = ghUser
                     ? `<div class="crab-pin has-avatar"><div class="pin-reel">`
                         + `<div class="pin-cell"><img src="${FERRIS}" alt="Ferris"></div>`
-                        + `<div class="pin-cell av"><img src="${esc(avatar)}" alt="${esc(user.nick)}" `
+                        + `<div class="pin-cell av"><img src="${esc(avatar)}" alt="${esc(user.username)}" `
                         + `onerror="this.onerror=null;this.src='${FERRIS}';this.style.objectFit='contain';"></div>`
                         + `<div class="pin-cell"><img src="${FERRIS}" alt="Ferris"></div>`
                         + `</div></div>`
@@ -515,11 +515,11 @@
                 });
 
                 const marker = L.marker(user.coordinates, { icon })
-                    .bindTooltip(esc(user.nick), { direction: 'top', offset: [0, -22], className: 'name-tip' })
+                    .bindTooltip(esc(user.username), { direction: 'top', offset: [0, -22], className: 'name-tip' })
                     .bindPopup(`
                         <div class="pop-head">
                             <img src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
-                            <h3>${esc(user.nick)}</h3>
+                            <h3>${esc(user.username)}</h3>
                         </div>
                         <div class="pop-links">${linksHtml}</div>
                     `);
@@ -530,7 +530,7 @@
         }
 
         function active() {
-            return records.filter(r => !query || r.user.nick.toLowerCase().includes(query));
+            return records.filter(r => !query || r.user.username.toLowerCase().includes(query));
         }
 
         // Keep every pin's crab/avatar loop aligned to one shared clock so they animate together
@@ -572,7 +572,7 @@
             }
             const shown = inView.slice(0, MAX_CHIPS);
             let html = shown.map(r =>
-                `<button class="chip-u${r.hasGh ? ' has-gh' : ''}" data-i="${r.idx}">${esc(r.user.nick)}</button>`
+                `<button class="chip-u${r.hasGh ? ' has-gh' : ''}" data-i="${r.idx}">${esc(r.user.username)}</button>`
             ).join('');
             if (inView.length > MAX_CHIPS) html += `<span class="chip-more">+ ${inView.length - MAX_CHIPS}</span>`;
             el.chips.innerHTML = html;
@@ -614,7 +614,7 @@
         const M = {
             modal: document.getElementById('addModal'),
             backdrop: document.getElementById('modalBackdrop'),
-            nick: document.getElementById('addNick'),
+            username: document.getElementById('addUsername'),
             citySelect: document.getElementById('citySelect'),
             lat: document.getElementById('latInput'),
             lng: document.getElementById('lngInput'),
@@ -697,7 +697,7 @@
             M.err.textContent = '';
             M.modal.classList.add('open');
             M.backdrop.classList.add('open');
-            M.nick.focus();
+            M.username.focus();
         }
         function closeModal() {
             M.modal.classList.remove('open');
@@ -710,8 +710,8 @@
 
         // Build the GitHub "new file" URL that becomes a PR draft
         document.getElementById('openPr').addEventListener('click', () => {
-            const nick = M.nick.value.trim();
-            if (!nick) { M.err.textContent = 'Please enter a username.'; M.nick.focus(); return; }
+            const username = M.username.value.trim();
+            if (!username) { M.err.textContent = 'Please enter a username.'; M.username.focus(); return; }
 
             const coords = getCoords();
             if (!coords) {
@@ -729,9 +729,9 @@
             });
             if (!Object.keys(links).length) { M.err.textContent = 'Add at least one link (e.g. your GitHub).'; return; }
 
-            const obj = { nick, coordinates: [coords[0], coords[1]], links };
+            const obj = { username, coordinates: [coords[0], coords[1]], links };
             const json = JSON.stringify(obj, null, 2);
-            const filename = 'user/' + nick.replace(/[^\w.-]/g, '_') + '.json';
+            const filename = 'user/' + username.replace(/[^\w.-]/g, '_') + '.json';
             const url = `https://github.com/${SLUG}/new/${BRANCH}?filename=${encodeURIComponent(filename)}&value=${encodeURIComponent(json)}`;
             window.open(url, '_blank', 'noopener');
             closeModal();
