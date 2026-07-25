@@ -38,6 +38,6 @@ Rust (`clap`, `serde`) for the validate/build CLI, and Leaflet with CARTO Voyage
 
 ---
 
-Inspired by the [Zig community user map](https://github.com/zig-community/user-map).
+Inspired by the [Zig community user map](https://github.com/zig-community/user-map), with interface cues from the [AWS Heroes map](https://aws.amazon.com/developer/community/heroes/).
 
 Ferris artwork by the [Rust Foundation](https://github.com/rust-lang/rust-artwork). Not affiliated with the Rust project.

@@ -31,7 +31,7 @@
         #map {
             width: 100vw;
             height: 100vh;
-            height: 100dvh;   /* avoid mobile address-bar clipping the bottom dock */
+            height: 100dvh;   /* avoid mobile address-bar clipping the panel */
             background: #e8edf2;
         }
         /* Hide default Leaflet zoom (we use the custom toolbar) */
@@ -122,57 +122,133 @@
         }
         .search-pop input::placeholder { color: var(--text-soft); }
 
-        /* ---- Bottom dock (member list) ---- */
-        .dock {
-            position: absolute; left: 0; right: 0; bottom: 0; z-index: 600;
-            background: linear-gradient(180deg,
-                rgba(140, 140, 140, 0.42) 0%,
-                rgba(78, 85, 94, 0.60) 12%,
-                rgba(26, 29, 34, 0.88) 30%);
-            padding: 9px 16px 12px;
-            box-shadow: 0 -6px 30px rgba(72, 72, 72, 0.4);
+        /* ---- Members panel (left, vertical list) ---- */
+        .panel-toggle {
+            position: absolute; left: 16px; bottom: 16px; z-index: 601;
+            width: 46px; height: 46px; border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--glass); backdrop-filter: blur(10px);
+            color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+            transition: background .15s, transform .12s, border-color .15s, box-shadow .15s, color .15s;
         }
-        .dock-head {
-            display: grid; grid-template-columns: 1fr auto 1fr;
-            align-items: center; margin-bottom: 11px;
+        .panel-toggle:hover {
+            background: #eb4800; border-color: var(--rust); color: #fff;
+            transform: translateY(-2px) scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,0.42);
         }
+        .panel-toggle:active { transform: scale(0.93); }
+        .panel-toggle.active { background: var(--rust); border-color: transparent; color: #fff; }
+        .panel-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        .panel {
+            position: absolute; left: 16px; bottom: 74px; z-index: 600;
+            width: 300px; max-width: calc(100vw - 32px);
+            max-height: min(66dvh, 600px);
+            display: flex; flex-direction: column;
+            background: linear-gradient(180deg, rgba(52,58,66,0.92), rgba(26,29,34,0.94));
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border); border-radius: 18px;
+            box-shadow: 0 20px 55px rgba(0,0,0,0.45);
+            overflow: hidden;
+            transform-origin: bottom left;
+            opacity: 0; pointer-events: none; transform: translateY(12px) scale(.98);
+            transition: opacity .2s, transform .2s;
+        }
+        .panel.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .panel-head {
+            display: flex; align-items: center; gap: 10px;
+            padding: 15px 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .panel-title { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.2px; color: #fff; }
+        .panel-close {
+            width: 26px; height: 26px; flex-shrink: 0; border: none; border-radius: 8px;
+            background: rgba(255,255,255,0.06); color: var(--text-soft);
+            font-size: 16px; line-height: 1; cursor: pointer;
+        }
+        .panel-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
         .inview {
-            justify-self: start; display: inline-flex; align-items: center; gap: 9px;
+            margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
             background: #0e1116; border: 1px solid var(--border);
-            border-radius: 10px; padding: 5px 11px;
+            border-radius: 999px; padding: 5px 11px;
         }
-        .inview-tag { font-size: 12px; font-weight: 600; color: var(--text-soft); }
-        .badge { font-size: 14px; font-weight: 800; }
-        .badge.total { color: var(--rust); }
-        .region {
-            justify-self: center;
-            font-size: 13px; font-weight: 800; letter-spacing: 2.5px;
-            color: var(--link);
+        .inview-tag { font-size: 11px; font-weight: 600; color: var(--text-soft); }
+        .badge.total { font-size: 13px; font-weight: 800; color: var(--rust); }
+
+        /* Country filter (custom dropdown) */
+        .panel-filter { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+        .cfilter {
+            width: 100%; display: flex; align-items: center; gap: 8px;
+            padding: 10px 12px; font: inherit; font-size: 13.5px; color: #fff;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 11px; cursor: pointer;
+        }
+        .cfilter:hover { border-color: rgba(255,255,255,0.2); }
+        .cfilter-label { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfilter-chev {
+            width: 14px; height: 14px; flex-shrink: 0; fill: none; stroke: var(--text-soft);
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s;
+        }
+        .cfilter[aria-expanded="true"] .cfilter-chev { transform: rotate(180deg); }
+
+        .cfilter-menu {
+            position: fixed; z-index: 700;
+            background: #1c2026; border: 1px solid var(--border); border-radius: 12px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+            max-height: 300px; overflow-y: auto; padding: 5px;
+            opacity: 0; pointer-events: none; transform: translateY(-6px);
+            transition: opacity .16s, transform .16s;
+        }
+        .cfilter-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .cfilter-menu::-webkit-scrollbar { width: 8px; }
+        .cfilter-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        .cfilter-opt {
+            display: flex; align-items: center; gap: 9px; width: 100%;
+            padding: 9px 10px; font: inherit; font-size: 13.5px; color: var(--text);
+            background: transparent; border: none; border-radius: 9px; cursor: pointer; text-align: left;
+        }
+        .cfilter-opt:hover { background: rgba(255,255,255,0.07); }
+        .cfilter-opt.sel { background: rgba(255,255,255,0.05); color: #fff; }
+        .cfilter-check {
+            width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: var(--rust);
+            stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0;
+        }
+        .cfilter-opt.sel .cfilter-check { opacity: 1; }
+        .cfilter-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfilter-count {
+            flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--text-soft);
+            background: #0e1116; border: 1px solid var(--border);
+            border-radius: 999px; padding: 2px 8px; min-width: 24px; text-align: center;
         }
 
-        .chips {
-            display: flex; flex-wrap: wrap; gap: 8px;
-            max-height: 124px; overflow-y: auto;
-            padding-right: 4px;
+        .mlist { flex: 1; min-height: 0; overflow-y: auto; padding: 6px; }
+        .mlist::-webkit-scrollbar { width: 8px; }
+        .mlist::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        .mrow {
+            display: flex; align-items: center; gap: 11px; width: 100%;
+            padding: 8px 10px; border: none; border-radius: 12px;
+            background: transparent; color: inherit; text-align: left; font: inherit;
+            cursor: pointer; transition: background .12s;
         }
-        .chips::-webkit-scrollbar { width: 8px; }
-        .chips::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-        .chip-u {
-            font: inherit; font-size: 12.5px; font-weight: 600;
-            padding: 7px 13px; border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.10);
-            background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03));
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
-            color: #c9d0d9; cursor: pointer;
-            white-space: nowrap; transition: background .12s, color .12s, border-color .12s;
+        .mrow:hover { background: rgba(255,255,255,0.08); }
+        .mrow-av {
+            width: 40px; height: 40px; flex-shrink: 0;
+            border-radius: 50%; object-fit: cover;
+            background: #2c3038; border: 1px solid rgba(255,255,255,0.12);
         }
-        .chip-u:hover {
-            background: linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.09));
-            border-color: rgba(255,255,255,0.22); color: #fff;
+        .mrow-av.crab { object-fit: contain; background: #1a1d22; padding: 4px; }
+        .mrow-body { min-width: 0; }
+        .mrow-name {
+            display: block; font-size: 14px; font-weight: 700; color: #f0f3f6;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .chip-u.has-gh { color: #f0f3f6; }
-        .chip-more { color: var(--rust); font-weight: 800; font-size: 13px; padding: 6px 4px; align-self: center; }
-        .chip-empty { color: var(--text-soft); font-size: 12.5px; padding: 0px 0px; }
+        .mrow-sub {
+            display: block; font-size: 12px; color: var(--text-soft); margin-top: 1px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mlist-empty { padding: 20px 16px; color: var(--text-soft); font-size: 13px; line-height: 1.5; text-align: center; }
+        .mlist-more { padding: 9px 12px 4px; color: var(--rust); font-weight: 700; font-size: 12.5px; }
 
         /* ---- Marker pins (Ferris crab, slides to reveal GitHub avatar) ---- */
         .crab-pin {
@@ -359,11 +435,9 @@
         .pr-btn:hover { background: var(--rust); color: #fff; }
 
         @media (max-width: 640px) {
-            .toolbar { top: auto; bottom: 160px; transform: none; gap: 10px; }
             .tool-btn { width: 38px; height: 38px; }
-            .dock { left: 0; right: 0; bottom: 0; }
-            .region { display: none; }
-            .chips { max-height: 84px; }
+            .panel-toggle { left: 12px; bottom: 12px; }
+            .panel { left: 12px; bottom: 70px; width: min(74vw, 300px); max-height: 52dvh; }
             .brand img { width: 44px; height: 44px; }
             .add-modal { right: 50%; transform: translateX(50%) scale(.96); }
             .add-modal.open { transform: translateX(50%) scale(1); }
@@ -446,18 +520,28 @@
         <button type="button" class="pr-btn" id="openPr">Open GitHub PR</button>
     </div>
 
-    <!-- Bottom dock -->
-    <div class="dock">
-        <div class="dock-head">
+    <!-- Members panel -->
+    <button class="panel-toggle" id="panelToggle" title="Members" aria-label="Toggle members list">
+        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+    </button>
+    <aside class="panel" id="panel">
+        <div class="panel-head">
+            <h2 class="panel-title">Rustaceans</h2>
             <div class="inview">
                 <span class="inview-tag">In view</span>
                 <span class="badge total" id="cTotal" title="Members in view">0</span>
             </div>
-            <div class="region" id="region">THE WORLD</div>
-            <div></div>
+            <button class="panel-close" id="panelClose" aria-label="Close">&times;</button>
         </div>
-        <div class="chips" id="chips"></div>
-    </div>
+        <div class="panel-filter">
+            <button class="cfilter" id="cfilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="cfilter-label" id="cfilterLabel">All countries</span>
+                <svg class="cfilter-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+        </div>
+        <div class="mlist" id="mlist"></div>
+    </aside>
+    <div class="cfilter-menu" id="cfilterMenu" role="listbox"></div>
 
     <!-- Overlay -->
     <div class="overlay" id="overlay">
@@ -505,21 +589,12 @@
         function normUrl(url) { return /^https?:\/\//.test(url) ? url : 'https://' + url; }
         function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-        // Rough continent name for the current map center
-        function continentAt(c) {
-            const lat = c.lat, lng = ((c.lng + 540) % 360) - 180;
-            if (lat <= -60) return 'ANTARCTICA';
-            if (lat >= 72)  return 'THE ARCTIC';
-            if (lng >= -170 && lng < -30) return lat >= 13 ? 'NORTH AMERICA' : 'SOUTH AMERICA';
-            if (lng >= -30 && lng < 60)   return lat >= 35 ? 'EUROPE' : 'AFRICA';
-            if (lng >= 60 && lng <= 180)  return (lat <= 0 && lng >= 110) ? 'OCEANIA' : 'ASIA';
-            return 'THE WORLD';
-        }
-
         // ---- State ----
         let records = [];
         let query = '';
+        let country = '';   // selected country filter ('' = all)
         let places = [];   // loaded from places.json (name, country, flag, lat, lng)
+        let countryCounts = [];   // [{ country, flag, n }] built once places + records are ready
 
         // Nearest listed place to a coordinate — used to label a member's country
         function nearestPlace(coords) {
@@ -594,7 +669,10 @@
         }
 
         function active() {
-            return records.filter(r => !query || r.user.username.toLowerCase().includes(query));
+            return records.filter(r =>
+                (!query || r.user.username.toLowerCase().includes(query)) &&
+                (!country || r.country === country)
+            );
         }
 
         // Keep every pin's crab/avatar loop aligned to one shared clock so they animate together
@@ -616,32 +694,40 @@
             requestAnimationFrame(syncPins);
         }
 
-        // Update the bottom dock for whatever is currently in the viewport
+        // Update the members panel for whatever is currently in the viewport
         const el = {
             total: document.getElementById('cTotal'),
-            region: document.getElementById('region'),
-            chips: document.getElementById('chips')
+            list: document.getElementById('mlist')
         };
-        const MAX_CHIPS = 80;
+        const MAX_ROWS = 100;
 
         function updateDock() {
             const bounds = map.getBounds();
             const inView = active().filter(r => bounds.contains(r.marker.getLatLng()));
 
             el.total.textContent = inView.length;
-            el.region.textContent = continentAt(map.getCenter());
 
             if (!inView.length) {
-                el.chips.innerHTML = `<span class="chip-empty">No members in view, zoom out or pan around.</span>`;
+                el.list.innerHTML = `<div class="mlist-empty">No members in view — zoom out or pan around.</div>`;
                 return;
             }
-            const shown = inView.slice(0, MAX_CHIPS);
-            let html = shown.map(r =>
-                `<button class="chip-u${r.hasGh ? ' has-gh' : ''}" data-i="${r.idx}">${esc(r.user.username)}</button>`
-            ).join('');
-            if (inView.length > MAX_CHIPS) html += `<span class="chip-more">+ ${inView.length - MAX_CHIPS}</span>`;
-            el.chips.innerHTML = html;
-            el.chips.querySelectorAll('.chip-u').forEach(b => {
+            const shown = inView.slice(0, MAX_ROWS);
+            let html = shown.map(r => {
+                const av = avatarFor(r.user);
+                const crab = av === FERRIS ? ' crab' : '';
+                const loc = nearestPlace(r.user.coordinates);
+                const sub = loc ? `${loc.flag || ''} ${esc(loc.country)}` : '';
+                return `<button class="mrow" data-i="${r.idx}">`
+                    + `<img class="mrow-av${crab}" src="${esc(av)}" alt="" `
+                    + `onerror="this.onerror=null;this.src='${FERRIS}';this.classList.add('crab');">`
+                    + `<span class="mrow-body">`
+                    + `<span class="mrow-name">${esc(r.user.username)}</span>`
+                    + (sub ? `<span class="mrow-sub">${sub}</span>` : '')
+                    + `</span></button>`;
+            }).join('');
+            if (inView.length > MAX_ROWS) html += `<div class="mlist-more">+ ${inView.length - MAX_ROWS} more in view</div>`;
+            el.list.innerHTML = html;
+            el.list.querySelectorAll('.mrow').forEach(b => {
                 const rec = records[+b.dataset.i];
                 b.addEventListener('click', () => flyTo(rec));
                 b.addEventListener('mouseenter', () => highlightMarker(rec, true));
@@ -654,7 +740,7 @@
             map.once('moveend', () => rec.marker.openPopup());
         }
 
-        // Hovering a dock name mirrors the map pin's hover effect (scale + name tooltip)
+        // Hovering a list row mirrors the map pin's hover effect (scale + name tooltip)
         function highlightMarker(rec, on) {
             if (!rec) return;
             const markerEl = rec.marker.getElement();
@@ -672,6 +758,90 @@
         document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
         document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
         document.getElementById('homeBtn').addEventListener('click', () => map.flyTo(HOME.center, HOME.zoom, { duration: 0.7 }));
+
+        // ---- Members panel toggle ----
+        const panel = document.getElementById('panel');
+        const panelToggle = document.getElementById('panelToggle');
+        function setPanel(open) {
+            panel.classList.toggle('open', open);
+            panelToggle.classList.toggle('active', open);
+        }
+        panelToggle.addEventListener('click', () => setPanel(!panel.classList.contains('open')));
+        document.getElementById('panelClose').addEventListener('click', () => setPanel(false));
+
+        // ---- Country filter ----
+        const cfilterBtn = document.getElementById('cfilterBtn');
+        const cfilterLabel = document.getElementById('cfilterLabel');
+        const cfilterMenu = document.getElementById('cfilterMenu');
+        const CHECK = '<svg class="cfilter-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+
+        // Tag each record with its nearest-place country, then tally per country
+        function buildCountryFilter() {
+            if (!places.length || !records.length) return;
+            const tally = new Map();
+            records.forEach(r => {
+                const loc = nearestPlace(r.user.coordinates);
+                r.country = loc ? loc.country : '';
+                r.flag = loc ? (loc.flag || '') : '';
+                if (!r.country) return;
+                const e = tally.get(r.country) || { country: r.country, flag: r.flag, n: 0 };
+                e.n++; tally.set(r.country, e);
+            });
+            countryCounts = [...tally.values()].sort((a, b) => a.country.localeCompare(b.country));
+            renderCountryMenu();
+        }
+
+        function renderCountryMenu() {
+            const opt = (val, label, n) =>
+                `<button class="cfilter-opt${country === val ? ' sel' : ''}" data-c="${esc(val)}">`
+                + CHECK + `<span class="cfilter-name">${label}</span>`
+                + `<span class="cfilter-count">${n}</span></button>`;
+            let html = opt('', 'All countries', records.length);
+            html += countryCounts.map(c => opt(c.country, `${c.flag} ${esc(c.country)}`, c.n)).join('');
+            cfilterMenu.innerHTML = html;
+            cfilterMenu.querySelectorAll('.cfilter-opt').forEach(b =>
+                b.addEventListener('click', () => selectCountry(b.dataset.c)));
+        }
+
+        function selectCountry(c) {
+            country = c;
+            const chosen = countryCounts.find(x => x.country === c);
+            cfilterLabel.textContent = c && chosen ? `${chosen.flag} ${chosen.country}` : 'All countries';
+            closeCountryMenu();
+            renderCountryMenu();
+            applyFilter();
+            const recs = active();
+            if (c && recs.length) {
+                const b = L.latLngBounds(recs.map(r => r.marker.getLatLng()));
+                map.flyToBounds(b.pad(0.35), { maxZoom: 6, duration: 0.7 });
+            } else if (!c) {
+                map.flyTo(HOME.center, HOME.zoom, { duration: 0.6 });
+            }
+        }
+
+        function openCountryMenu() {
+            cfilterMenu.classList.add('open');
+            const r = cfilterBtn.getBoundingClientRect();
+            const mh = Math.min(cfilterMenu.scrollHeight, 300);
+            let top = r.bottom + 6;
+            if (top + mh > window.innerHeight - 10) top = Math.max(10, r.top - 6 - mh);
+            cfilterMenu.style.left = r.left + 'px';
+            cfilterMenu.style.top = top + 'px';
+            cfilterMenu.style.width = r.width + 'px';
+            cfilterBtn.setAttribute('aria-expanded', 'true');
+        }
+        function closeCountryMenu() {
+            cfilterMenu.classList.remove('open');
+            cfilterBtn.setAttribute('aria-expanded', 'false');
+        }
+        cfilterBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            cfilterMenu.classList.contains('open') ? closeCountryMenu() : openCountryMenu();
+        });
+        document.addEventListener('click', e => {
+            if (!cfilterMenu.contains(e.target) && !cfilterBtn.contains(e.target)) closeCountryMenu();
+        });
+        window.addEventListener('resize', closeCountryMenu);
         // ---- Add-yourself modal ----
         const SLUG = "Andrew-Velox/rust-user-map";
         const BRANCH = "main";
@@ -705,6 +875,7 @@
                     frag.appendChild(o);
                 });
                 M.citySelect.appendChild(frag);
+                buildCountryFilter();
             })
             .catch(err => {
                 console.error('Could not load places.json:', err);
@@ -837,6 +1008,7 @@
                         return;
                     }
                     buildRecords(users);
+                    buildCountryFilter();
                     overlay.classList.add('hidden');
                 })
                 .catch(err => {
