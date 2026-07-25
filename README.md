@@ -4,6 +4,11 @@ An interactive world map of Rustaceans. Every member is a Ferris crab dropped at
 
 **[Open the map](https://andrew-velox.github.io/rust-user-map)**
 
+<p align="center">
+  <img src=".github/workflows/asstes/user.png" alt="The map with every member shown as a Ferris crab, and a member popup open" width="49%">
+  <img src=".github/workflows/asstes/map.png" alt="The same map with the crabs flipped over to reveal GitHub avatars" width="49%">
+</p>
+
 <!-- The member list is a folder of small JSON files. A Rust CLI validates them and bundles them into the data the site loads, and GitHub Actions redeploys the page on every push. -->
 
 ## Add yourself
