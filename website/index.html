@@ -84,6 +84,7 @@
         .tool-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .tool-btn.accent { border-color: transparent; }
         .tool-btn.accent:hover { background: #eb4800; color: #fff; border-color: transparent; }
+        .tool-btn.active { background: var(--rust); border-color: transparent; color: #fff; }
 
         /* Connected pill for the zoom/reset controls (dividers between) */
         .tool-group {
@@ -289,6 +290,18 @@
         }
         .name-tip::before { border-top-color: #14171c; }
 
+        /* ---- Community pins (meetup groups) ---- */
+        .comm-pin { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); cursor: pointer; transition: transform .15s; }
+        .comm-pin:hover, .comm-pin.hovered { transform: scale(1.18); }
+        .comm-pin svg { width: 26px !important; height: 26px !important; display: block; }
+        .cc { padding: 15px 18px 16px; max-width: 262px; }
+        .cc-name { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .cc-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--rust); margin-bottom: 6px; }
+        .cc-country { font-size: 12.5px; font-weight: 600; color: #cdd3db; margin-bottom: 8px; }
+        .cc-desc { font-size: 12.5px; line-height: 1.5; color: #c2c9d2; margin-bottom: 11px; }
+        .cc-link { display: inline-block; font-size: 13px; font-weight: 700; color: #f2a878; text-decoration: none; }
+        .cc-link:hover { color: #e6a23c; text-decoration: underline; }
+
         /* ---- Popup: user info card ---- */
         .leaflet-popup-content-wrapper {
             border-radius: 16px;
@@ -466,6 +479,9 @@
                 <svg viewBox="0 0 24 24"><polyline points="8 11 12 7 16 11"/><polyline points="8 14 12 18 16 14"/></svg>
             </button>
         </div>
+        <button class="tool-btn" id="commBtn" title="Toggle communities" aria-label="Toggle communities" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.1"/><path d="M2.5 20v-1.3a5.2 5.2 0 0 1 10.4 0V20"/><path d="M16 4.2a3.1 3.1 0 0 1 0 6"/><path d="M18 13.3a5.2 5.2 0 0 1 3.5 4.9V20"/></svg>
+        </button>
         <button class="tool-btn" id="searchBtn" title="Search members" aria-label="Search members">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
@@ -574,6 +590,7 @@
 
         // Plain marker layer — no clustering, so no count bubbles
         const markersLayer = L.featureGroup().addTo(map);
+        const commLayer = L.layerGroup();   // meetup communities (toggleable)
 
         // ---- Helpers ----
         function ghUsername(user) {
@@ -595,6 +612,7 @@
         let country = '';   // selected country filter ('' = all)
         let places = [];   // loaded from places.json (name, country, flag, lat, lng)
         let countryCounts = [];   // [{ country, flag, n }] built once places + records are ready
+        let countryFlag = {};   // country name -> flag emoji (from places.json)
 
         // Nearest listed place to a coordinate — used to label a member's country
         function nearestPlace(coords) {
@@ -842,6 +860,48 @@
             if (!cfilterMenu.contains(e.target) && !cfilterBtn.contains(e.target)) closeCountryMenu();
         });
         window.addEventListener('resize', closeCountryMenu);
+
+        // ---- Communities (meetup groups from rust-communities-map) ----
+        const COMM_ICON = '<div class="comm-pin"><svg viewBox="0 0 24 24">'
+            + '<path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" fill="#c84115" stroke="#fff" stroke-width="1.6"/>'
+            + '<circle cx="12" cy="9" r="2.6" fill="#fff"/></svg></div>';
+
+        function communityPopup(c) {
+            const flag = countryFlag[c.country] || '';
+            const raw = c.description || '';
+            const desc = raw.length > 170 ? esc(raw.slice(0, 170)) + '…' : esc(raw);
+            return `<div class="cc">
+                <div class="cc-tag">Community</div>
+                <div class="cc-name">${esc(c.name)}</div>
+                ${c.country ? `<div class="cc-country">${flag} ${esc(c.country)}</div>` : ''}
+                ${desc ? `<div class="cc-desc">${desc}</div>` : ''}
+                ${c.link ? `<a class="cc-link" href="${esc(normUrl(c.link))}" target="_blank" rel="noopener">Visit group ↗</a>` : ''}
+            </div>`;
+        }
+
+        function buildCommunities(list) {
+            commLayer.clearLayers();
+            const icon = L.divIcon({ className: '', html: COMM_ICON, iconSize: [26, 26], iconAnchor: [13, 26], popupAnchor: [0, -24] });
+            list.forEach(c => {
+                const co = c.coordinates;   // stored as [lng, lat]
+                if (!Array.isArray(co) || co.length < 2) return;
+                const marker = L.marker([co[1], co[0]], { icon })
+                    .bindTooltip(esc(c.name), { direction: 'top', offset: [0, -24], className: 'name-tip' })
+                    .bindPopup(() => communityPopup(c), { minWidth: 220, maxWidth: 280 });
+                marker.on('popupopen', () => marker.closeTooltip());
+                commLayer.addLayer(marker);
+            });
+        }
+
+        let commOn = false;
+        const commBtn = document.getElementById('commBtn');
+        function setComm(on) {
+            commOn = on;
+            commBtn.classList.toggle('active', on);
+            commBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            if (on) commLayer.addTo(map); else map.removeLayer(commLayer);
+        }
+        commBtn.addEventListener('click', () => setComm(!commOn));
         // ---- Add-yourself modal ----
         const SLUG = "Andrew-Velox/rust-user-map";
         const BRANCH = "main";
@@ -866,6 +926,7 @@
             .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(data => {
                 places = Array.isArray(data) ? data : (data.places || []);
+                places.forEach(p => { if (p.country && p.flag && !countryFlag[p.country]) countryFlag[p.country] = p.flag; });
                 const frag = document.createDocumentFragment();
                 places.forEach(p => {
                     if (p.lat == null || p.lng == null) return;
@@ -881,6 +942,16 @@
                 console.error('Could not load places.json:', err);
                 M.citySelect.options[0].textContent = 'Place list unavailable — use Lat/Lng';
             });
+
+        // Load communities (meetup groups) and drop them on the map
+        fetch('communities.json', { cache: 'no-cache' })
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(data => {
+                const list = Array.isArray(data) ? data : (data.communities || []);
+                buildCommunities(list);
+                if (commOn) commLayer.addTo(map);
+            })
+            .catch(err => console.error('Could not load communities.json:', err));
 
         // Link rows
         function addLinkRow(label, url) {
