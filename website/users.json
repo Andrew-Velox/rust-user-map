@@ -70,6 +70,16 @@
     }
   },
   {
+    "username": "stonerfish",
+    "coordinates": [
+      34.0,
+      -118.48
+    ],
+    "links": {
+      "GitHub": "https://github.com/stonerfish"
+    }
+  },
+  {
     "username": "kornelski",
     "coordinates": [
       51.5072,
@@ -97,6 +107,16 @@
     ],
     "links": {
       "GitHub": "https://github.com/carols10cents"
+    }
+  },
+  {
+    "username": "Flash303",
+    "coordinates": [
+      45.1715,
+      5.7224
+    ],
+    "links": {
+      "GitHub": "https://github.com/Flash303"
     }
   },
   {
@@ -177,6 +197,16 @@
     ],
     "links": {
       "GitHub": "https://github.com/alexcrichton"
+    }
+  },
+  {
+    "username": "suradet-ps",
+    "coordinates": [
+      14.7995,
+      100.6534
+    ],
+    "links": {
+      "GitHub": "https://github.com/suradet-ps"
     }
   },
   {
