@@ -6,8 +6,6 @@
     <title>Rust Community Map</title>
     <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/mascot/ferris-flat-happy.svg">
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <style>
         :root {
             --rust: #c84115;
@@ -26,28 +24,29 @@
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             color: var(--text);
             overflow: hidden;
+            background: radial-gradient(120% 120% at 50% 42%, #16324f 0%, #0d1f33 44%, #081420 100%);
+        }
+        /* Faint dot grid over the backdrop, like the reference */
+        body::before {
+            content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 26px 26px;
         }
 
-        #map {
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;   /* avoid mobile address-bar clipping the panel */
-            background: #e8edf2;
+        #globe {
+            position: absolute; inset: 0; z-index: 1;
+            width: 100vw; height: 100vh; height: 100dvh;
         }
-        /* Hide default Leaflet zoom (we use the custom toolbar) */
-        .leaflet-control-zoom { display: none; }
-        /* Small, subtle Google-style copyright label */
-        .leaflet-control-attribution {
-            font-size: 9px !important;
-            line-height: 1.5;
-            padding: 1px 7px !important;
-            margin: 0 !important;
-            background: rgba(255, 255, 255, 0.72) !important;
-            color: #3a3f47 !important;
+        #globe canvas { display: block; }
+
+        /* Small NASA / globe.gl credit chip */
+        .credit {
+            position: absolute; right: 0; bottom: 0; z-index: 600;
+            font-size: 9px; line-height: 1.5; padding: 2px 8px;
+            background: rgba(10, 16, 24, 0.55); color: #9fb0c2;
             border-radius: 6px 0 0 0;
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.12);
         }
-        .leaflet-control-attribution a { color: #0a6ba8 !important; text-decoration: none; }
+        .credit a { color: #cfd8e3; text-decoration: none; }
 
         /* ---- Brand chip (top-left) ---- */
         .brand {
@@ -251,48 +250,44 @@
         .mlist-empty { padding: 20px 16px; color: var(--text-soft); font-size: 13px; line-height: 1.5; text-align: center; }
         .mlist-more { padding: 9px 12px 4px; color: var(--rust); font-weight: 700; font-size: 12.5px; }
 
-        /* ---- Marker pins (Ferris crab, slides to reveal GitHub avatar) ---- */
+        /* ---- Marker container on the globe (CSS2D element) ----
+           CSS2DRenderer writes an inline transform/z-index onto .mk every frame,
+           so hover scaling is applied to child pins, never to .mk itself. */
+        .mk {
+            position: relative; width: 38px; height: 38px;
+            cursor: pointer; pointer-events: auto;
+        }
+        .mk-name {
+            position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+            background: #14171c; color: #fff; border-radius: 7px;
+            font-size: 12px; font-weight: 600; padding: 4px 9px; white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+            opacity: 0; pointer-events: none; transition: opacity .12s;
+        }
+        .mk:hover .mk-name, .mk.hovered .mk-name { opacity: 1; }
+
+        /* ---- Member pins (Ferris crab, slides to reveal GitHub avatar) ---- */
         .crab-pin {
-            width: 50px; height: 50px;
+            width: 100%; height: 100%;
             border-radius: 50%; overflow: hidden;
-            border: 2px solid transparent;   /* only turns white while the avatar shows */
-            transition: transform .15s; cursor: pointer;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));   /* soft depth, always */
+            transition: transform .15s;
         }
-        /* Fade the border in only during the avatar portion of the reel (synced to pinReel) */
-        .crab-pin.has-avatar { animation: pinBorder 6s ease-in-out infinite; }
-        @keyframes pinBorder {
-            0%, 35%   { border-color: transparent; }
-            45%, 65%  { border-color: #fff; }
-            75%, 100% { border-color: transparent; }
-        }
-        .crab-pin:hover, .crab-pin.hovered { transform: scale(1.15); }
+        .mk:hover .crab-pin, .mk.hovered .crab-pin { transform: scale(1.13); }
+        /* Reel position and the orange ring are driven by one shared JS clock (see tickFlip),
+           not CSS animation, so every pin flips in lockstep regardless of when it mounts. */
         .crab-pin > img { width: 100% !important; height: 100% !important; object-fit: contain; display: block; }
 
-        /* One-direction reel LOOP — crab → avatar → (seamless) crab, always upward */
-        .pin-reel {
-            position: relative; width: 100%; height: 300%;
-            animation: pinReel 6s ease-in-out infinite;
-        }
+        /* One-direction reel — crab → avatar → (seamless) crab, always upward */
+        .pin-reel { position: relative; width: 100%; height: 300%; }
         .pin-cell { width: 100%; height: 33.3333%; }
         .pin-cell img { width: 100% !important; height: 100% !important; display: block; object-fit: contain; }
         .pin-cell.av img { object-fit: cover; }
-        @keyframes pinReel {
-            0%, 30%   { transform: translateY(0); }
-            40%, 70%  { transform: translateY(-33.3333%); }
-            80%, 100% { transform: translateY(-66.6667%); }
-        }
-
-        /* ---- Name tooltip on hover ---- */
-        .name-tip {
-            background: #14171c; color: #fff; border: none;
-            border-radius: 7px; font-size: 12.5px; font-weight: 600;
-            padding: 4px 9px; box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        }
-        .name-tip::before { border-top-color: #14171c; }
 
         /* ---- Community pins (meetup groups) ---- */
-        .comm-pin { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); cursor: pointer; transition: transform .15s; }
-        .comm-pin:hover, .comm-pin.hovered { transform: scale(1.18); }
+        .mk.mk-comm { width: 26px; height: 26px; }
+        .comm-pin { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); transition: transform .15s; }
+        .mk-comm:hover .comm-pin, .mk-comm.hovered .comm-pin { transform: scale(1.15); }
         .comm-pin svg { width: 26px !important; height: 26px !important; display: block; }
         .cc { padding: 15px 18px 16px; max-width: 262px; }
         .cc-name { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
@@ -302,22 +297,26 @@
         .cc-link { display: inline-block; font-size: 13px; font-weight: 700; color: #f2a878; text-decoration: none; }
         .cc-link:hover { color: #e6a23c; text-decoration: underline; }
 
-        /* ---- Popup: user info card ---- */
-        .leaflet-popup-content-wrapper {
+        /* ---- Info card (marker popup) ---- */
+        .infocard {
+            position: absolute; z-index: 620;
+            min-width: 240px; max-width: 300px;
             border-radius: 16px;
             background: rgba(44, 48, 56, 0.94);
             backdrop-filter: blur(10px);
             color: #fff;
-            box-shadow: 0 14px 44px rgba(0,0,0,0.45);
+            box-shadow: 0 14px 44px rgba(0,0,0,0.5);
+            opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.96);
+            transition: opacity .15s, transform .15s;
         }
-        .leaflet-popup-tip { background: rgba(44, 48, 56, 0.94); }
-        .leaflet-popup-content { margin: 0; }
-        .leaflet-popup-close-button {
-            color: rgba(255,255,255,0.6) !important;
-            top: 9px !important; right: 11px !important;
-            font-size: 18px !important;
+        .infocard.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .infocard-close {
+            position: absolute; top: 8px; right: 10px; z-index: 2;
+            width: 24px; height: 24px; border: none; border-radius: 7px;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.65);
+            font-size: 16px; line-height: 1; cursor: pointer;
         }
-        .leaflet-popup-close-button:hover { color: #fff !important; }
+        .infocard-close:hover { background: rgba(255,255,255,0.16); color: #fff; }
         .uc { display: flex; align-items: center; gap: 15px; padding: 15px 32px 15px 15px; }
         .uc-av {
             width: 82px; height: 82px; flex-shrink: 0;
@@ -338,12 +337,12 @@
         .overlay {
             position: absolute; inset: 0; z-index: 700;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 14px; background: #eef1f4; color: #5b6470; text-align: center; padding: 20px;
+            gap: 14px; background: #0b1a2b; color: #9fb0c2; text-align: center; padding: 20px;
         }
         .overlay.hidden { display: none; }
         .spinner {
             width: 34px; height: 34px;
-            border: 3px solid #d3d8de; border-top-color: var(--rust);
+            border: 3px solid rgba(255,255,255,0.14); border-top-color: var(--rust);
             border-radius: 50%; animation: spin .8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -458,11 +457,11 @@
     </style>
 </head>
 <body>
-    <div id="map"></div>
+    <div id="globe"></div>
 
     <!-- Brand -->
     <div class="brand">
-        <img src="https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/logo/rust-logo.svg" alt="rust-logo">
+        <img src="https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/logo/rust-logo-white-outline.svg" alt="rust-logo">
         
     </div>
 
@@ -559,38 +558,68 @@
     </aside>
     <div class="cfilter-menu" id="cfilterMenu" role="listbox"></div>
 
+    <!-- Info card (marker popup) -->
+    <div class="infocard" id="infocard"></div>
+
+    <!-- Credit -->
+    <div class="credit">Earth: <a href="https://visibleearth.nasa.gov/" target="_blank" rel="noopener">NASA Blue Marble</a> · <a href="https://github.com/vasturiano/globe.gl" target="_blank" rel="noopener">globe.gl</a></div>
+
     <!-- Overlay -->
     <div class="overlay" id="overlay">
         <div class="spinner"></div>
         <div class="msg">Loading the community…</div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
     <script>
     (function () {
-        const FERRIS = "https://raw.githubusercontent.com/rust-lang/rust-artwork/refs/heads/main/mascot/ferris-flat-happy.svg";
+        const FERRIS = "../assets/rustacean-flat-gesture.svg";
         const REPO = "https://github.com/Andrew-Velox/rust-user-map";
-        const HOME = { center: [25, 5], zoom: 2.5 };
+        const HOME = { lat: 20, lng: 0, altitude: 2.4 };
+        const IN_VIEW_DEG = 78;   // members within this great-circle angle of the POV are "in view"
 
-        const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
-        const map = L.map('map', {
-            center: HOME.center, zoom: HOME.zoom,
-            minZoom: 2, maxZoom: 20,
-            zoomSnap: 0.5,   // allow fractional zoom levels like 2.5
-            maxBounds: worldBounds, maxBoundsViscosity: 1.0,
-            zoomControl: false
-        });
+        const globe = Globe()(document.getElementById('globe'))
+            .backgroundColor('rgba(0,0,0,0)')
+            .globeImageUrl('assets/earth-blue-marble.jpg')
+            .bumpImageUrl('assets/earth-topology.png')
+            .showAtmosphere(true).atmosphereColor('#5b7fb0').atmosphereAltitude(0.18)
+            .htmlElementsData([])
+            .htmlElement(d => d.el)
+            .htmlLat(d => d.lat).htmlLng(d => d.lng).htmlAltitude(0.012);
 
-        // CARTO Voyager tiles — OpenStreetMap data, license-safe for public use
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20, subdomains: 'abcd', detectRetina: true,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        }).addTo(map);
-        map.attributionControl.setPrefix(false);   // drop the "Leaflet" prefix for a cleaner label
+        globe.width(innerWidth).height(innerHeight);
+        globe.pointOfView(HOME);
+        const controls = globe.controls();
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.35;
+        controls.enableDamping = true; controls.dampingFactor = 0.12;
+        controls.minDistance = 130; controls.maxDistance = 900;
+        window.addEventListener('resize', () => globe.width(innerWidth).height(innerHeight));
 
-        // Plain marker layer — no clustering, so no count bubbles
-        const markersLayer = L.featureGroup().addTo(map);
-        const commLayer = L.layerGroup();   // meetup communities (toggleable)
+        // Auto-rotate pauses while hovering a marker, dragging, or with a card/panel open
+        const rotatePaused = { hover: false, drag: false, card: false, panel: false };
+        function refreshRotate() {
+            controls.autoRotate = !(rotatePaused.hover || rotatePaused.drag || rotatePaused.card || rotatePaused.panel);
+        }
+        controls.addEventListener('start', () => { rotatePaused.drag = true; refreshRotate(); });
+        controls.addEventListener('end', () => { rotatePaused.drag = false; refreshRotate(); });
+
+        // Communities share the one html-elements layer with members
+        let communities = [];   // { el, lat, lng, kind:'comm', data }
+
+        // Great-circle angular distance (degrees) between two lat/lng points
+        function angularDist(aLat, aLng, bLat, bLng) {
+            const r = Math.PI / 180;
+            const dLat = (bLat - aLat) * r, dLng = (bLng - aLng) * r;
+            const s = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLng / 2) ** 2;
+            return 2 * Math.asin(Math.min(1, Math.sqrt(s))) / r;
+        }
+        // Circular mean of longitudes (handles the antimeridian)
+        function meanLng(lngs) {
+            const r = Math.PI / 180; let x = 0, y = 0;
+            lngs.forEach(l => { x += Math.cos(l * r); y += Math.sin(l * r); });
+            return Math.atan2(y, x) / r;
+        }
 
         // ---- Helpers ----
         function ghUsername(user) {
@@ -635,11 +664,6 @@
                 const hasGh = platforms.some(p => /github/i.test(p));
                 const hasWeb = platforms.some(p => !/github/i.test(p));
 
-                // Each platform title is itself the clickable link
-                const rowsHtml = platforms.map(p =>
-                    `<a class="uc-link" href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
-                ).join('');
-
                 const ghUser = ghUsername(user);
                 const pinHtml = ghUser
                     ? `<div class="crab-pin has-avatar"><div class="pin-reel">`
@@ -650,38 +674,19 @@
                         + `</div></div>`
                     : `<div class="crab-pin"><img src="${FERRIS}" alt="Ferris"></div>`;
 
-                const icon = L.divIcon({
-                    className: '',
-                    html: pinHtml,
-                    iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -22]
-                });
+                const elm = document.createElement('div');
+                elm.className = 'mk';
+                elm.innerHTML = pinHtml + `<span class="mk-name">${esc(user.username)}</span>`;
 
-                // Built on open so places.json (for the country) is loaded by then
-                const popupHtml = () => {
-                    const loc = nearestPlace(user.coordinates);
-                    const countryRow = loc
-                        ? `<div class="uc-country">${loc.flag || ''} ${esc(loc.country)}</div>`
-                        : '';
-                    return `
-                        <div class="uc">
-                            <img class="uc-av" src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
-                            <div class="uc-body">
-                                <h3 class="uc-name">${esc(user.username)}</h3>
-                                ${countryRow}
-                                <div class="uc-links">${rowsHtml}</div>
-                            </div>
-                        </div>`;
+                const rec = {
+                    user, el: elm, kind: 'user', idx,
+                    lat: user.coordinates[0], lng: user.coordinates[1],
+                    platforms, hasGh, hasWeb
                 };
-
-                const marker = L.marker(user.coordinates, { icon })
-                    .bindTooltip(esc(user.username), { direction: 'top', offset: [0, -22], className: 'name-tip' })
-                    .bindPopup(popupHtml, { minWidth: 250, maxWidth: 300 });
-
-                // Hide the hover name while the popup is open (don't show both at once)
-                marker.on('popupopen', () => marker.closeTooltip());
-                marker.on('tooltipopen', () => { if (marker.isPopupOpen()) marker.closeTooltip(); });
-
-                return { user, marker, platforms, hasGh, hasWeb, idx };
+                elm.addEventListener('mouseenter', () => { rotatePaused.hover = true; refreshRotate(); });
+                elm.addEventListener('mouseleave', () => { rotatePaused.hover = false; refreshRotate(); });
+                elm.addEventListener('click', e => { e.stopPropagation(); openCard(rec); });
+                return rec;
             });
             applyFilter();
         }
@@ -693,23 +698,50 @@
             );
         }
 
-        // Keep every pin's crab/avatar loop aligned to one shared clock so they animate together
+        // The crab↔avatar flip is driven from ONE shared clock so every pin is always in phase,
+        // no matter when globe.gl mounts it. A single rAF loop writes the reel offset and ring
+        // to all pins each frame from the same Date.now() value.
         const PIN_EPOCH = Date.now();
-        function syncPins() {
-            const delay = ((PIN_EPOCH - Date.now()) / 1000) + 's';
-            document.querySelectorAll('.pin-reel, .crab-pin.has-avatar').forEach(f => {
-                if (f.dataset.synced) return;
-                f.dataset.synced = '1';
-                f.style.animationDelay = delay;
-            });
+        const FLIP_MS = 6000;
+        function smooth(p, a, b) {                     // eased 0→1 progress within [a,b]
+            if (p <= a) return 0; if (p >= b) return 1;
+            const t = (p - a) / (b - a); return t * t * (3 - 2 * t);
+        }
+        function reelY(p) {                            // % translateY of the 3-cell reel
+            if (p < 0.30) return 0;
+            if (p < 0.40) return -33.3333 * smooth(p, 0.30, 0.40);
+            if (p < 0.70) return -33.3333;
+            if (p < 0.80) return -33.3333 - 33.3333 * smooth(p, 0.70, 0.80);
+            return -66.6666;
+        }
+        function ringAlpha(p) {                         // orange ring opacity (only during avatar)
+            if (p < 0.35) return 0;
+            if (p < 0.45) return smooth(p, 0.35, 0.45);
+            if (p < 0.65) return 1;
+            if (p < 0.75) return 1 - smooth(p, 0.65, 0.75);
+            return 0;
+        }
+        function tickFlip() {
+            const p = ((Date.now() - PIN_EPOCH) % FLIP_MS) / FLIP_MS;
+            const y = reelY(p).toFixed(3) + '%';
+            const ring = `0 0 0 2.6px rgba(255,255,255,${ringAlpha(p).toFixed(3)})`;
+            document.querySelectorAll('.pin-reel').forEach(r => { r.style.transform = `translateY(${y})`; });
+            document.querySelectorAll('.crab-pin.has-avatar').forEach(c => { c.style.boxShadow = ring; });
+            requestAnimationFrame(tickFlip);
+        }
+        requestAnimationFrame(tickFlip);
+
+        // The combined dataset fed to the globe's html-elements layer
+        function activeData() {
+            const members = active().map(r => ({ el: r.el, lat: r.lat, lng: r.lng, ref: r }));
+            const comms = commOn ? communities.map(c => ({ el: c.el, lat: c.lat, lng: c.lng, ref: c })) : [];
+            return members.concat(comms);
         }
 
-        // Rebuild which markers are on the map (after search change)
+        // Rebuild which markers are on the globe (after search / country / communities change)
         function applyFilter() {
-            markersLayer.clearLayers();
-            active().forEach(r => markersLayer.addLayer(r.marker));
-            updateDock();
-            requestAnimationFrame(syncPins);
+            globe.htmlElementsData(activeData());
+            updateInView();
         }
 
         // Update the members panel for whatever is currently in the viewport
@@ -719,14 +751,15 @@
         };
         const MAX_ROWS = 100;
 
-        function updateDock() {
-            const bounds = map.getBounds();
-            const inView = active().filter(r => bounds.contains(r.marker.getLatLng()));
+        // "In view" on a sphere = members on the camera-facing hemisphere (near the point of view)
+        function updateInView() {
+            const pov = globe.pointOfView();
+            const inView = active().filter(r => angularDist(pov.lat, pov.lng, r.lat, r.lng) <= IN_VIEW_DEG);
 
             el.total.textContent = inView.length;
 
             if (!inView.length) {
-                el.list.innerHTML = `<div class="mlist-empty">No members in view — zoom out or pan around.</div>`;
+                el.list.innerHTML = `<div class="mlist-empty">No members in view — spin the globe or zoom out.</div>`;
                 return;
             }
             const shown = inView.slice(0, MAX_ROWS);
@@ -747,35 +780,102 @@
             el.list.innerHTML = html;
             el.list.querySelectorAll('.mrow').forEach(b => {
                 const rec = records[+b.dataset.i];
-                b.addEventListener('click', () => flyTo(rec));
+                b.addEventListener('click', () => focusRecord(rec));
                 b.addEventListener('mouseenter', () => highlightMarker(rec, true));
                 b.addEventListener('mouseleave', () => highlightMarker(rec, false));
             });
         }
 
-        function flyTo(rec) {
-            map.flyTo(rec.user.coordinates, 6, { duration: 0.8 });
-            map.once('moveend', () => rec.marker.openPopup());
+        // Rotate + zoom the globe to bring a record front-and-center, then open its card.
+        // The single point-of-view move avoids the flicker of competing tweens.
+        function focusRecord(rec) {
+            const p = globe.pointOfView();
+            globe.pointOfView({ lat: rec.lat, lng: rec.lng, altitude: Math.min(p.altitude, 1.5) }, 900);
+            openCard(rec);
         }
 
-        // Hovering a list row mirrors the map pin's hover effect (scale + name tooltip)
+        // Hovering a list row mirrors the globe marker's hover effect (scale + name)
         function highlightMarker(rec, on) {
-            if (!rec) return;
-            const markerEl = rec.marker.getElement();
-            if (markerEl) {
-                const pin = markerEl.querySelector('.crab-pin');
-                if (pin) pin.classList.toggle('hovered', on);
-            }
-            if (on) rec.marker.openTooltip();
-            else rec.marker.closeTooltip();
+            if (!rec || !rec.el) return;
+            rec.el.classList.toggle('hovered', on);
         }
 
-        map.on('moveend zoomend', updateDock);
+        // Keep the card attached to its marker (rAF loop tracks it through tweens & rotation);
+        // throttle the in-view recompute on control changes.
+        const infocard = document.getElementById('infocard');
+        let cardRec = null, changeTick = 0;
+        (function cardLoop() { if (cardRec) positionCard(); requestAnimationFrame(cardLoop); })();
+        controls.addEventListener('change', () => {
+            const now = performance.now();
+            if (now - changeTick > 400) { changeTick = now; updateInView(); }
+        });
+
+        function memberCardHtml(rec) {
+            const user = rec.user;
+            const loc = nearestPlace(user.coordinates);
+            const countryRow = loc ? `<div class="uc-country">${loc.flag || ''} ${esc(loc.country)}</div>` : '';
+            const rowsHtml = rec.platforms.map(p =>
+                `<a class="uc-link" href="${esc(normUrl(user.links[p]))}" target="_blank" rel="noopener">${esc(p)}</a>`
+            ).join('');
+            const avatar = avatarFor(user);
+            return `<div class="uc">
+                <img class="uc-av" src="${esc(avatar)}" onerror="this.onerror=null;this.src='${FERRIS}';">
+                <div class="uc-body">
+                    <h3 class="uc-name">${esc(user.username)}</h3>
+                    ${countryRow}
+                    <div class="uc-links">${rowsHtml}</div>
+                </div></div>`;
+        }
+
+        // Shows the card and pins it to the marker. Does NOT move the camera — callers that
+        // want to fly to the record (focusRecord) issue the single point-of-view move themselves.
+        function openCard(rec) {
+            cardRec = rec;
+            const body = rec.kind === 'comm' ? communityPopup(rec.data) : memberCardHtml(rec);
+            infocard.innerHTML = `<button class="infocard-close" aria-label="Close">&times;</button>` + body;
+            infocard.querySelector('.infocard-close').addEventListener('click', closeCard);
+            infocard.classList.add('open');
+            rotatePaused.card = true; refreshRotate();
+            positionCard();
+        }
+
+        function positionCard() {
+            if (!cardRec) return;
+            const pov = globe.pointOfView();
+            if (angularDist(pov.lat, pov.lng, cardRec.lat, cardRec.lng) > 88) {
+                infocard.style.opacity = '0'; infocard.style.pointerEvents = 'none'; return;
+            }
+            infocard.style.opacity = ''; infocard.style.pointerEvents = '';
+            const sc = globe.getScreenCoords(cardRec.lat, cardRec.lng, 0.02);
+            if (!sc) return;
+            const pad = 12, w = infocard.offsetWidth, h = infocard.offsetHeight;
+            let x = sc.x, y = sc.y - 18 - h / 2;   // sit above the marker
+            x = Math.max(pad + w / 2, Math.min(innerWidth - pad - w / 2, x));
+            y = Math.max(pad + h / 2, Math.min(innerHeight - pad - h / 2, y));
+            infocard.style.left = x + 'px';
+            infocard.style.top = y + 'px';
+        }
+
+        function closeCard() {
+            cardRec = null;
+            infocard.classList.remove('open');
+            rotatePaused.card = false; refreshRotate();
+        }
+        document.addEventListener('click', e => {
+            if (cardRec && !infocard.contains(e.target) && !e.target.closest('.mk')) closeCard();
+        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
 
         // ---- Toolbar ----
-        document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
-        document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
-        document.getElementById('homeBtn').addEventListener('click', () => map.flyTo(HOME.center, HOME.zoom, { duration: 0.7 }));
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            const p = globe.pointOfView();
+            globe.pointOfView({ altitude: Math.max(0.35, p.altitude * 0.75) }, 300);
+        });
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            const p = globe.pointOfView();
+            globe.pointOfView({ altitude: Math.min(7, p.altitude * 1.3) }, 300);
+        });
+        document.getElementById('homeBtn').addEventListener('click', () => globe.pointOfView(HOME, 800));
 
         // ---- Members panel toggle ----
         const panel = document.getElementById('panel');
@@ -783,6 +883,7 @@
         function setPanel(open) {
             panel.classList.toggle('open', open);
             panelToggle.classList.toggle('active', open);
+            rotatePaused.panel = open; refreshRotate();
         }
         panelToggle.addEventListener('click', () => setPanel(!panel.classList.contains('open')));
         document.getElementById('panelClose').addEventListener('click', () => setPanel(false));
@@ -830,10 +931,11 @@
             applyFilter();
             const recs = active();
             if (c && recs.length) {
-                const b = L.latLngBounds(recs.map(r => r.marker.getLatLng()));
-                map.flyToBounds(b.pad(0.35), { maxZoom: 6, duration: 0.7 });
+                const lat = recs.reduce((s, r) => s + r.lat, 0) / recs.length;
+                const lng = meanLng(recs.map(r => r.lng));
+                globe.pointOfView({ lat, lng, altitude: 1.6 }, 800);
             } else if (!c) {
-                map.flyTo(HOME.center, HOME.zoom, { duration: 0.6 });
+                globe.pointOfView(HOME, 800);
             }
         }
 
@@ -880,17 +982,18 @@
         }
 
         function buildCommunities(list) {
-            commLayer.clearLayers();
-            const icon = L.divIcon({ className: '', html: COMM_ICON, iconSize: [26, 26], iconAnchor: [13, 26], popupAnchor: [0, -24] });
-            list.forEach(c => {
+            communities = list.map(c => {
                 const co = c.coordinates;   // stored as [lng, lat]
-                if (!Array.isArray(co) || co.length < 2) return;
-                const marker = L.marker([co[1], co[0]], { icon })
-                    .bindTooltip(esc(c.name), { direction: 'top', offset: [0, -24], className: 'name-tip' })
-                    .bindPopup(() => communityPopup(c), { minWidth: 220, maxWidth: 280 });
-                marker.on('popupopen', () => marker.closeTooltip());
-                commLayer.addLayer(marker);
-            });
+                if (!Array.isArray(co) || co.length < 2) return null;
+                const elm = document.createElement('div');
+                elm.className = 'mk mk-comm';
+                elm.innerHTML = COMM_ICON + `<span class="mk-name">${esc(c.name)}</span>`;
+                const rec = { el: elm, kind: 'comm', lat: co[1], lng: co[0], data: c };
+                elm.addEventListener('mouseenter', () => { rotatePaused.hover = true; refreshRotate(); });
+                elm.addEventListener('mouseleave', () => { rotatePaused.hover = false; refreshRotate(); });
+                elm.addEventListener('click', e => { e.stopPropagation(); openCard(rec); });
+                return rec;
+            }).filter(Boolean);
         }
 
         let commOn = false;
@@ -899,7 +1002,7 @@
             commOn = on;
             commBtn.classList.toggle('active', on);
             commBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-            if (on) commLayer.addTo(map); else map.removeLayer(commLayer);
+            applyFilter();
         }
         commBtn.addEventListener('click', () => setComm(!commOn));
         // ---- Add-yourself modal ----
@@ -949,7 +1052,7 @@
             .then(data => {
                 const list = Array.isArray(data) ? data : (data.communities || []);
                 buildCommunities(list);
-                if (commOn) commLayer.addTo(map);
+                applyFilter();
             })
             .catch(err => console.error('Could not load communities.json:', err));
 
