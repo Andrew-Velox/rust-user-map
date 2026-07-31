@@ -34,7 +34,7 @@ The build rejects files that don't parse, whose username doesn't match the filen
 
 ## Built with
 
-Rust (`clap`, `serde`) for the validate/build CLI, and Leaflet with CARTO Voyager (OpenStreetMap) tiles for the map.
+Rust (`clap`, `serde`) for the validate/build CLI, and [globe.gl](https://github.com/vasturiano/globe.gl) (three.js) with a NASA Blue Marble texture for the 3D globe.
 
 ---
 
